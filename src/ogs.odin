@@ -14,13 +14,13 @@ OGSConnectionStatus :: enum {
 }
 
 OGSClient :: struct {
-    client: sio.SIO_Client,
-    socket: sio.SIO_Socket,
+    client: sio.Client,
+    socket: sio.Socket,
     connection_status: OGSConnectionStatus,
     board: ^Board,
 }
 
-ogs_connect :: proc () -> ^OGSClient  {
+ogs_connect :: proc () -> ^OGSClient {
     ogs_client := new(OGSClient)
 
     ogs_client.client = sio.client_create()
@@ -60,7 +60,7 @@ ogs_load_game :: proc (client: ^OGSClient, game_id: i64) {
     sio.socket_emit(client.socket, "game/connect", msg)
 }
 
-ogs_gamedata_callback :: proc "c" (event: cstring, msg: sio.SIO_Message, client: rawptr) {
+ogs_gamedata_callback :: proc "c" (event: cstring, msg: sio.Message, client: rawptr) {
     context = runtime.default_context()
     move_array := sio.message_object_get(msg, "moves")
     move_array_size := sio.message_array_size(move_array)
