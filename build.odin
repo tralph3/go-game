@@ -196,6 +196,7 @@ make_build_cmd :: proc (pkg, out: string) -> Command {
     append(&cmd, "odin")
     append(&cmd, "build")
     append(&cmd, pkg)
+    append(&cmd, "-debug")
     append(&cmd, fmt.tprintf("-extra-linker-flags:-L%s %s", BUILD_PATH, "-lstdc++ -lm -static-libgcc -lssl -lcrypto"))
     append(&cmd, fmt.tprintf("-out:%s", pt.join({ BUILD_PATH, out })))
 
