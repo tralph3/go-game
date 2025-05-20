@@ -4,6 +4,7 @@
 #include "sio_message.h"
 #include <map>
 #include <string>
+#include <memory>
 #include <mutex>
 
 using namespace sio;
@@ -163,8 +164,13 @@ size_t sio_message_array_size(sio_message_handle array_) {
 
 sio_message_handle sio_message_array_get(sio_message_handle array_, size_t index) {
     sio_message_c* array = (sio_message_c*)array_;
-    if (array->msg->get_flag() == sio::message::flag_array && index < array->children.size()) {
-        return array->children[index];
+    if (array->msg->get_flag() == sio::message::flag_array) {
+        const auto& vec = array->msg->get_vector();
+        if (index < vec.size()) {
+            sio_message_c* m = new sio_message_c;
+            m->msg = vec[index];
+            return (sio_message_handle)m;
+        }
     }
     return nullptr;
 }
