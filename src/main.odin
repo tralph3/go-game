@@ -8,6 +8,7 @@ import "core:math"
 import "core:math/rand"
 import "core:c"
 import "core:thread"
+import "core:time"
 
 import "gltf"
 
@@ -31,6 +32,9 @@ ai_play :: proc (board: ^Board) {
 frame_delta: f32 = 0.0
 
 main :: proc () {
+
+
+    rl.SetTraceLogLevel(.NONE)
     rl.SetConfigFlags({ .MSAA_4X_HINT })
 
     rl.InitWindow(800, 600, "Go")

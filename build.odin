@@ -211,13 +211,9 @@ make_build_cmd :: proc (pkg, out: string) -> Command {
 }
 
 clone_submodules :: proc () -> (ok: bool) {
-    if os2.is_dir("src/http") {
-        return true
-    }
-
     cmd: Command
 
-    append(&cmd, "git", "submodule", "update")
+    append(&cmd, "git", "submodule", "update", "--init")
 
     return run_cmd(&cmd, silent=true)
 }
