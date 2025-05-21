@@ -210,6 +210,18 @@ make_build_cmd :: proc (pkg, out: string) -> Command {
     return cmd
 }
 
+clone_submodules :: proc () -> (ok: bool) {
+    if os2.is_dir("src/http") {
+        return true
+    }
+
+    cmd: Command
+
+    append(&cmd, "git", "submodule", "update")
+
+    return run_cmd(&cmd, silent=true)
+}
+
 main :: proc () {
     ok, err := prepare()
     if !ok {
@@ -222,6 +234,11 @@ main :: proc () {
             fmt.eprintln("ERROR: Error compiling socketio-client. Aborting")
             return
         }
+    }
+
+    if !clone_submodules() {
+        fmt.eprintln("ERROR: Failed cloning submodules")
+        return
     }
 
     cmd := make_build_cmd("src", "go")
