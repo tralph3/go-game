@@ -7,8 +7,10 @@ import "core:strings"
 import pt "core:path/filepath"
 import "core:time"
 
-BUILD_PATH: string : "build"
-SOCKETIO_TAG: string : "3.1.0"
+BUILD_PATH: string :   #config(BUILD_PATH, "build")
+SOCKETIO_TAG: string : #config(SOCKETIO_TAG, "3.1.0")
+DEBUG: bool :          #config(DEBUG, false)
+
 
 socketio_path: string
 
@@ -196,7 +198,12 @@ make_build_cmd :: proc (pkg, out: string) -> Command {
     append(&cmd, "odin")
     append(&cmd, "build")
     append(&cmd, pkg)
-    append(&cmd, "-debug")
+
+    when DEBUG {
+        append(&cmd, "-debug")
+        append(&cmd, "-sanitize:address")
+    }
+
     append(&cmd, fmt.tprintf("-extra-linker-flags:-L%s %s", BUILD_PATH, "-lstdc++ -lm -static-libgcc -lssl -lcrypto"))
     append(&cmd, fmt.tprintf("-out:%s", pt.join({ BUILD_PATH, out })))
 
@@ -219,8 +226,11 @@ main :: proc () {
 
     cmd := make_build_cmd("src", "go")
     append(&cmd, "-error-pos-style:unix")
-    // strict_style_flags(&cmd)
-    // optimization_flags(&cmd)
+
+    when !DEBUG {
+        strict_style_flags(&cmd)
+        optimization_flags(&cmd)
+    }
 
     _ = run_cmd(&cmd)
 }
