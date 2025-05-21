@@ -89,7 +89,7 @@ ogs_login :: proc (username, password: string) -> (^OGSSession, LoginError) {
 
     jwt_struct := struct { user_jwt: string } {}
     if err := json.unmarshal(transmute([]u8) (body.(string)), &jwt_struct); err != nil {
-        free(ogs_session)
+        ogs_session_destroy(ogs_session)
         return nil, err
     }
 
@@ -98,6 +98,20 @@ ogs_login :: proc (username, password: string) -> (^OGSSession, LoginError) {
     ogs_configure_socketio_client(ogs_session)
 
     return ogs_session, nil
+}
+
+ogs_session_destroy :: proc (session: ^OGSSession) {
+    if session.sio_session.socket != nil {
+        sio.socket_destroy(session.sio_session.socket)
+    }
+
+    if session.sio_session.client != nil {
+        sio.client_destroy(session.sio_session.client)
+    }
+
+    delete(session.credentials.jwt)
+
+    free(session)
 }
 
 ogs_configure_socketio_client :: proc (session: ^OGSSession) {
