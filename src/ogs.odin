@@ -7,6 +7,7 @@ import "base:runtime"
 import "http"
 import "http/client"
 import "core:encoding/json"
+import "core:strconv"
 
 OGS_URL :: "https://online-go.com"
 
@@ -136,10 +137,61 @@ ogs_configure_socketio_client :: proc (session: ^OGSSession) {
     sio.socket_emit(session.sio_session.socket, "authenticate", msg)
 }
 
+ogs_game_connect :: proc (session: ^OGSSession, game_id: i64) {
+    msg := sio.message_create_object()
+    defer sio.message_destroy(msg)
+
+    sio.socket_on(
+        session.sio_session.socket,
+        fmt.ctprintf("game/%d/gamedata", game_id),
+        ogs_on_game_connect,
+        session)
+
+    sio.socket_on(
+        session.sio_session.socket,
+        fmt.ctprintf("game/%d/move", game_id),
+        ogs_on_game_move,
+        session)
+
+    sio.message_object_set(msg, "game_id", sio.message_create_integer(game_id))
+    sio.message_object_set(msg, "chat", sio.message_create_boolean(0))
+
+    sio.socket_emit(session.sio_session.socket, "game/connect", msg)
+}
+
+ogs_game_move :: proc (session: ^OGSSession, game_id: i64, x, y: u32) {
+    if err := board_set(session.board, x, y); err != nil {
+        return
+    }
+
+    msg := sio.message_create_object()
+    defer sio.message_destroy(msg)
+
+    move := board_get_sgf_coordinate_cstring(x, y)
+    sio.message_object_set(msg, "game_id", sio.message_create_integer(game_id))
+    sio.message_object_set(msg, "move", sio.message_create_string(move))
+
+    sio.socket_emit(session.sio_session.socket, "game/move", msg)
+}
+
+ogs_on_game_move :: proc "c" (event: cstring, msg: sio.Message, session: rawptr) {
+    context = runtime.default_context()
+
+    move_array := sio.message_object_get(msg, "move")
+    x := u32(sio.message_get_integer(sio.message_array_get(move_array, 0)))
+    y := u32(sio.message_get_integer(sio.message_array_get(move_array, 1)))
+
+    board_set((^OGSSession)(session).board, x, y)
+
+    sio.message_destroy(msg)
+}
+
+ogs_on_game_connect :: proc "c" (event: cstring, msg: sio.Message, session: rawptr) {
+
+}
+
 @(private="file")
 ogs_open_connection_callback :: proc "c" (session: rawptr) {
-    context = runtime.default_context()
-    fmt.println("Connected!")
 }
 
 @(private="file")
@@ -166,4 +218,16 @@ ogs_configure_authenticated_request :: proc (session: ^OGSSession) -> client.Req
     http.headers_set_content_type_mime(&req.headers, .Json)
 
     return req
+}
+
+@(private="file")
+ogs_extract_game_id_from_event_string :: proc "contextless" (str: cstring) -> i64 {
+    context = runtime.default_context()
+
+    str := string(str)
+
+    start := strings.index(str, "/") + 1
+    end := strings.last_index(str, "/")
+
+    return i64(strconv.atoi(str[start:end]))
 }

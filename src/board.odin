@@ -3,6 +3,8 @@ package main
 import "core:mem"
 import "core:fmt"
 import "core:slice"
+import "core:strings"
+import "core:bytes"
 
 BoardSetError :: enum u8 {
     NIL,
@@ -363,4 +365,25 @@ board_get_group_at_point :: proc (board: ^Board, x, y: u32) -> StoneGroup {
         stone_type = stone,
         stones = to_visit[:],
     }
+}
+
+board_get_sgf_coordinate :: proc (x, y: u32, allocator := context.allocator) -> string {
+    lowercase_ascii_offset :: 97
+
+    return fmt.tprintf("%c%c", lowercase_ascii_offset + x, lowercase_ascii_offset + y)
+}
+
+board_get_sgf_coordinate_cstring :: proc (x, y: u32, allocator := context.allocator) -> cstring {
+    lowercase_ascii_offset :: 97
+
+    return fmt.ctprintf("%c%c", lowercase_ascii_offset + x, lowercase_ascii_offset + y)
+}
+
+board_get_coordinate_from_sgf_cstring :: proc "contextless" (str: cstring) -> [2]u32 {
+    lowercase_ascii_offset :: 97
+
+    x := ([^]u8)(str)[0] - lowercase_ascii_offset
+    y := ([^]u8)(str)[1] - lowercase_ascii_offset
+
+    return { u32(x), u32(y) }
 }
