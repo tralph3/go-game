@@ -3,7 +3,7 @@ package main
 import rl "vendor:raylib"
 
 shaders_load :: proc () -> rl.Shader {
-    shader := rl.LoadShader("./assets/shaders/visual.vert", "./assets/shaders/visual.frag")
+
 
     return shader
 }

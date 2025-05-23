@@ -4,7 +4,7 @@ import rl "vendor:raylib"
 import "core:fmt"
 import "core:math"
 
-input_process :: proc (player: ^Player, board: ^BoardObject) {
+input_process :: proc (player: ^Player, board: ^BoardObject, ogs_session: ^OGSSession, game_id: i64) {
     movement_vector: rl.Vector3 = {}
 
     if rl.IsKeyDown(.W) {
@@ -45,18 +45,17 @@ input_process :: proc (player: ^Player, board: ^BoardObject) {
             x := (collision.point.x + board.grid_size.x / 2) / tile_offset.x
             y := (collision.point.z + board.grid_size.y / 2) / tile_offset.y
 
-            side := board.board.next_stone
+            rx := u32(math.round(x))
+            ry := u32(math.round(y))
 
-            error := board_set(&board.board, u32(math.round(x)), u32(math.round(y)))
-            if error != nil {
-            } else {
+            ogs_game_move(ogs_session, game_id, rx, ry)
+            // error := board_set(&board.board, rx, ry)
 
                 // if ai_thread != nil {
                 //     thread.destroy(ai_thread)
                 // }
 
                 // ai_thread = thread.create_and_start_with_poly_data(&board, ai_play)
-            }
         }
     }
 
