@@ -25,7 +25,7 @@ Player :: struct {
     sitting: bool,
     sitting_height: f32,
     direction: [3]f32,
-    callbacks: []PlayerStateCallbacks,
+    callbacks: [PlayerState]PlayerStateCallbacks,
     state: PlayerState,
 }
 
@@ -49,11 +49,9 @@ player_init :: proc (start_pos: [2]f32, speed, height: f32) {
 
     rl.DisableCursor()
 
-    player.callbacks = make([]PlayerStateCallbacks, PlayerState.LAST)
-
-    player.callbacks[PlayerState.ROAMING].move = player_move_roaming
-    player.callbacks[PlayerState.PLAYING].move = player_move_null
-    player.callbacks[PlayerState.MENU].move = player_move_null
+    player.callbacks[.ROAMING].move = player_move_roaming
+    player.callbacks[.PLAYING].move = player_move_null
+    player.callbacks[.MENU].move = player_move_null
 
     GLOBAL_STATE.player = player
 }
