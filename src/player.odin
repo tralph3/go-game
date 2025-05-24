@@ -2,18 +2,36 @@ package main
 
 import rl "vendor:raylib"
 import "core:math/linalg"
+import "core:log"
+
+PlayerMoveCallback :: proc (direction: [3]f32)
+
+PlayerStateCallbacks :: struct {
+    move: PlayerMoveCallback,
+}
+
+PlayerState :: enum {
+    ROAMING,
+    PLAYING,
+    MENU,
+    LAST,
+}
 
 Player :: struct {
-    camera: rl.Camera,
+    camera: rl.Camera,          // doubles as player position
     speed: f32,
     max_speed: f32,
     height: f32,
     sitting: bool,
     sitting_height: f32,
     direction: [3]f32,
+    callbacks: []PlayerStateCallbacks,
+    state: PlayerState,
 }
 
-player_new :: proc (start_pos: [2]f32, speed, height: f32) -> Player {
+player_init :: proc (start_pos: [2]f32, speed, height: f32) {
+    log.info("Initializing player...")
+
     player := Player {
         camera = rl.Camera {
             position = { start_pos.x, height, start_pos.y },
@@ -26,26 +44,53 @@ player_new :: proc (start_pos: [2]f32, speed, height: f32) -> Player {
         max_speed = speed,
         height = height,
         sitting = true,
+        state = .ROAMING,
     }
 
-    return player
+    rl.DisableCursor()
+
+    player.callbacks = make([]PlayerStateCallbacks, PlayerState.LAST)
+
+    player.callbacks[PlayerState.ROAMING].move = player_move_roaming
+    player.callbacks[PlayerState.PLAYING].move = player_move_null
+    player.callbacks[PlayerState.MENU].move = player_move_null
+
+    GLOBAL_STATE.player = player
 }
 
-player_move :: proc (player: ^Player, direction: [3]f32, look_delta: [2]f32) {
-    if player.sitting {
-        return
-    }
+player_update :: proc () {
+    player_move()
+    player_interact()
+}
+
+player_move :: proc () {
+    player := &GLOBAL_STATE.player
+    player.callbacks[player.state].move(input_get_movement_vector())
+}
+
+player_move_roaming :: proc (direction: [3]f32) {
+    player := &GLOBAL_STATE.player
 
     if direction.x != 0 || direction.y != 0 {
-        player.speed = rl.Lerp(player.speed, player.max_speed, 0.01)
+        player.speed = rl.Lerp(player.speed, player.max_speed, 0.01 * rl.GetFrameTime())
         player.direction = direction
     } else {
-        player.speed = rl.Lerp(player.speed, 0, 0.01)
+        player.speed = rl.Lerp(player.speed, 0, 0.01 * rl.GetFrameTime())
     }
 
-    velocity := player.direction * player.speed * frame_delta
+    velocity := player.direction * player.speed * rl.GetFrameTime()
+
+    look_delta := rl.GetMouseDelta()
 
     rl.UpdateCameraPro(&player.camera, velocity, { look_delta.x, look_delta.y, 0.0 }, 0)
+}
+
+player_move_null :: proc (direction: [3]f32) {
+    // this function does nothing
+}
+
+player_interact :: proc () {
+
 }
 
 player_update_camera_position :: proc (player: ^Player, direction: f32, sit_position: [2]f32, board_position: [3]f32) {

@@ -1,0 +1,4 @@
+;;; -*- lisp-data -*-
+((:name "Build debug"
+        :command "odin run build.odin -file -define:DEBUG=true"
+        :type "compile"))

@@ -1,6 +1,7 @@
 package main
 
 import rl "vendor:raylib"
+import "core:log"
 
 Assets :: struct {
     models: []rl.Model,
@@ -30,6 +31,8 @@ ShaderID :: enum {
 }
 
 assets_load_all :: proc () -> Assets {
+    log.info("Loading assets...")
+
     assets: Assets
 
     assets.models  = assets_load_models()
@@ -40,6 +43,8 @@ assets_load_all :: proc () -> Assets {
 }
 
 assets_unload_all :: proc (assets: ^Assets) {
+    log.info("Unloading assets...")
+
     assets_unload_models(assets)
     assets_unload_sounds(assets)
     assets_unload_shaders(assets)
@@ -47,6 +52,8 @@ assets_unload_all :: proc (assets: ^Assets) {
 
 @(private="file")
 assets_load_models :: proc () -> []rl.Model {
+    log.info("Loading models...")
+
     models := make([]rl.Model, ModelID.LAST)
 
     models[ModelID.ROOM] = rl.LoadModel("./assets/models/room.glb")
@@ -60,6 +67,8 @@ assets_load_models :: proc () -> []rl.Model {
 
 @(private="file")
 assets_load_sounds :: proc () -> []rl.Sound {
+    log.info("Loading sounds...")
+
     sounds := make([]rl.Sound, SoundID.LAST)
 
     sounds[SoundID.STONE_PLACE_FIRST] = rl.LoadSound("./assets/sounds/stone_place_1.ogg")
@@ -71,6 +80,8 @@ assets_load_sounds :: proc () -> []rl.Sound {
 
 @(private="file")
 assets_load_shaders :: proc () -> []rl.Shader {
+    log.info("Loading shaders...")
+
     shaders := make([]rl.Shader, ShaderID.LAST)
 
     shaders[ShaderID.VISUAL] = rl.LoadShader("./assets/shaders/visual.vert", "./assets/shaders/visual.frag")

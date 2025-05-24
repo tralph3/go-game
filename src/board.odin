@@ -155,12 +155,11 @@ board_get_valid_moves :: proc (board: ^Board) -> [][2]u32 {
     return valid_moves[:]
 }
 
-board_new :: proc (size: u32, allocator: mem.Allocator = context.allocator) -> (Board, mem.Allocator_Error) {
-    board_data, err1 := make([]BoardState, size * size)
-    board_prev_state, err2 := make([]BoardState, size * size)
+board_new :: proc (size: u32, allocator: mem.Allocator = context.allocator) -> (board: Board, err: mem.Allocator_Error) {
+    assert(size % 2 != 0 && size > 1)
 
-    if err1 != nil { return Board{}, err1 }
-    if err2 != nil { return Board{}, err2 }
+    board_data := make([]BoardState, size * size) or_return
+    board_prev_state := make([]BoardState, size * size) or_return
 
     for i in 0..<len(board_data) {
         board_data[i] = .EMPTY
@@ -168,12 +167,10 @@ board_new :: proc (size: u32, allocator: mem.Allocator = context.allocator) -> (
 
     mem.copy_non_overlapping(slice.as_ptr(board_prev_state), slice.as_ptr(board_data), len(board_data))
 
-    board := Board {
-        size = size,
-        data = board_data,
-        next_stone = .BLACK,
-        prev_board_state = board_prev_state,
-    }
+    board.size = size
+    board.data = board_data
+    board.next_stone = .BLACK
+    board.prev_board_state = board_prev_state
 
     return board, nil
 }

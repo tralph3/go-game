@@ -175,7 +175,7 @@ ogs_game_move :: proc (session: ^OGSSession, game_id: i64, x, y: u32) {
 }
 
 ogs_on_game_move :: proc "c" (event: cstring, msg: sio.Message, session: rawptr) {
-    context = runtime.default_context()
+    context = GLOBAL_STATE.ctx
 
     move_array := sio.message_object_get(msg, "move")
     x := u32(sio.message_get_integer(sio.message_array_get(move_array, 0)))
@@ -222,7 +222,7 @@ ogs_configure_authenticated_request :: proc (session: ^OGSSession) -> client.Req
 
 @(private="file")
 ogs_extract_game_id_from_event_string :: proc "contextless" (str: cstring) -> i64 {
-    context = runtime.default_context()
+    context = GLOBAL_STATE.ctx
 
     str := string(str)
 
