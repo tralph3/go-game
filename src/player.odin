@@ -1,6 +1,7 @@
 package main
 
 import rl "vendor:raylib"
+import "core:math"
 import "core:math/linalg"
 import "core:log"
 
@@ -47,8 +48,6 @@ player_init :: proc (start_pos: [2]f32, speed, height: f32) {
         state = .ROAMING,
     }
 
-    rl.DisableCursor()
-
     player.callbacks[.ROAMING].move = player_move_roaming
     player.callbacks[.PLAYING].move = player_move_null
     player.callbacks[.MENU].move = player_move_null
@@ -70,17 +69,17 @@ player_move_roaming :: proc (direction: [3]f32) {
     player := &GLOBAL_STATE.player
 
     if direction.x != 0 || direction.y != 0 {
-        player.speed = rl.Lerp(player.speed, player.max_speed, 0.01 * rl.GetFrameTime())
+        player.speed = rl.Lerp(player.speed, player.max_speed, 1 - math.pow(0.0001, rl.GetFrameTime()))
         player.direction = direction
     } else {
-        player.speed = rl.Lerp(player.speed, 0, 0.01 * rl.GetFrameTime())
+        player.speed = rl.Lerp(player.speed, 0, 1 - math.pow(0.0001, rl.GetFrameTime()))
     }
 
     velocity := player.direction * player.speed * rl.GetFrameTime()
 
-    look_delta := rl.GetMouseDelta()
+    look_delta := rl.GetMouseDelta() * 0.2
 
-    rl.UpdateCameraPro(&player.camera, velocity, { look_delta.x, look_delta.y, 0.0 }, 0)
+    rl.UpdateCameraPro(&player.camera, velocity, { look_delta.x, look_delta.y, 0 }, 0)
 }
 
 player_move_null :: proc (direction: [3]f32) {
@@ -108,13 +107,13 @@ player_update_camera_position :: proc (player: ^Player, direction: f32, sit_posi
     player.camera.position = linalg.lerp(player.camera.position, [3]f32{ 0.0, player.sitting_height, 1.25 - player.sitting_height }, 0.005)
 }
 
-player_toggle_sit :: proc (player: ^Player) {
-    if player.sitting {
-        rl.DisableCursor()
-    } else {
-        rl.EnableCursor()
-    }
+// player_toggle_sit :: proc (player: ^Player) {
+//     if player.sitting {
+//         rl.DisableCursor()
+//     } else {
+//         rl.EnableCursor()
+//     }
 
-    player.speed = 0
-    player.sitting = !player.sitting
-}
+//     player.speed = 0
+//     player.sitting = !player.sitting
+// }

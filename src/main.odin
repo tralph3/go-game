@@ -15,12 +15,30 @@ import "core:log"
 import "gltf"
 
 main :: proc () {
-    GLOBAL_STATE.ctx = runtime.default_context()
+    context.logger = log.create_console_logger(opt={ .Level, .Terminal_Color })
+    defer log.destroy_console_logger(context.logger)
 
-    GLOBAL_STATE.ctx.logger = log.create_console_logger()
-    defer log.destroy_console_logger(GLOBAL_STATE.ctx.logger)
+    when ODIN_DEBUG {
+		track: mem.Tracking_Allocator
+		mem.tracking_allocator_init(&track, context.allocator)
+		context.allocator = mem.tracking_allocator(&track)
 
-    context = GLOBAL_STATE.ctx
+		defer {
+			if len(track.allocation_map) > 0 {
+				log.errorf("=== %v allocations not freed: ===\n", len(track.allocation_map))
+				for _, entry in track.allocation_map {
+					log.errorf("- %v bytes @ %v\n", entry.size, entry.location)
+				}
+			}
+
+			mem.tracking_allocator_destroy(&track)
+		}
+	}
+
+    defer free_all(context.temp_allocator)
+
+    GLOBAL_STATE.ctx = context
+    defer state_free()
 
     render_init_raylib()
     defer render_deinit_raylib()
@@ -31,7 +49,7 @@ main :: proc () {
     shaders_init()
     models_init()
     world_init()
-    player_init({ -1.0, 0.0 }, 1.4, 1)
+    player_init({ -1.0, 0.0 }, 1.9, 1)
 
     board, _ := board_new(19)
     defer board_delete(&board)

@@ -10,3 +10,8 @@ GLOBAL_STATE := struct {
 
     ctx: runtime.Context,
 } {}
+
+
+state_free :: proc () {
+    delete(GLOBAL_STATE.objects)
+}

@@ -43,11 +43,6 @@ input_process :: proc () {
     // player_update_camera_position(player, mouse_wheel_delta, { -0.5, 0.0001 }, { board.position.x, board.height, board.position.y })
 }
 
-input_get_mouse_delta :: proc () -> [2]f32 {
-    return rl.GetMouseDelta()
-}
-
-
 input_get_movement_vector :: proc () -> (movement_vector: [3]f32) {
     if rl.IsKeyDown(.W) {
         movement_vector.x += 1

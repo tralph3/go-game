@@ -8,9 +8,13 @@ render_init_raylib :: proc () {
     log.info("Starting raylib...")
 
     rl.SetTraceLogLevel(.NONE)
-    rl.SetConfigFlags({ .MSAA_4X_HINT, .VSYNC_HINT })
+    rl.SetConfigFlags({ .MSAA_4X_HINT })
 
     rl.InitWindow(800, 600, "Go")
+
+    rl.SetTargetFPS(60)
+
+    rl.DisableCursor()
 
     rl.InitAudioDevice()
 }
