@@ -20,7 +20,6 @@ PlayerState :: enum {
     ROAMING,
     PLAYING,
     MENU,
-    LAST,
 }
 
 Player :: struct {
@@ -32,6 +31,7 @@ Player :: struct {
     direction: [3]f32,
     callbacks: [PlayerState]PlayerStateCallbacks,
     state: PlayerState,
+    current_board: ^BoardWorldObject,
 }
 
 player_init :: proc (start_pos: [2]f32, speed, height: f32) {
@@ -61,6 +61,8 @@ player_init :: proc (start_pos: [2]f32, speed, height: f32) {
     player.callbacks[.ROAMING].camera = player_camera_roaming
     player.callbacks[.PLAYING].camera = player_camera_playing
     player.callbacks[.MENU].camera = player_interact_null
+
+    player.current_board = &GLOBAL_STATE.board_objects[0]
 
     GLOBAL_STATE.player = player
 }
@@ -98,8 +100,8 @@ player_interact_playing :: proc () {
         return
     }
 
-    coord, ok := input_get_clicked_board_coord()
-    if !ok {
+    coord, hit := input_get_clicked_board_coord()
+    if !hit {
         return
     }
 
@@ -130,26 +132,31 @@ player_camera_roaming :: proc () {
 
 player_camera_playing :: proc () {
     player := &GLOBAL_STATE.player
+    board := player.current_board
 
-    board_position := GLOBAL_STATE.board_objects[0].transform.position
-    board_position.y = GLOBAL_STATE.board_objects[0].height
+    board_pos := board.transform.position
 
-    min_sitting_height := board_position.y + 0.3
-    max_sitting_height := board_position.y + 0.9
+    min_height := board.height + 0.3
+    max_height := board.height + 0.9
 
-    player.camera.fovy = linalg.lerp(player.camera.fovy, 40.0, 1 - math.pow(0.01, rl.GetFrameTime()))
-    player.camera.target = linalg.lerp(player.camera.target, board_position, 1 - math.pow(0.01, rl.GetFrameTime()))
+    player.sitting_height += rl.GetMouseWheelMove() * 0.1
+    player.sitting_height = clamp(player.sitting_height, min_height, max_height)
 
-    direction := rl.GetMouseWheelMove()
+    board_top_y := board_pos.y + board.height
 
-    player.sitting_height += direction * 0.1
-    player.sitting_height = clamp(player.sitting_height, min_sitting_height, max_sitting_height)
+    target := board_pos
+    target.y = board_top_y
 
+    position_offset := [3]f32{ -1.25 + player.sitting_height, player.sitting_height, 0 }
 
-    player.camera.position = linalg.lerp(
-        player.camera.position,
-        [3]f32{ 0.0, player.sitting_height, 1.25 - player.sitting_height }, 1 - math.pow(0.01, rl.GetFrameTime()))
+    desired_pos := board_pos + position_offset
+
+    smoothing := 1 - math.pow(0.01, rl.GetFrameTime())
+    player.camera.target = linalg.lerp(player.camera.target, target, smoothing)
+    player.camera.position = linalg.lerp(player.camera.position, desired_pos, smoothing)
+    player.camera.fovy = linalg.lerp(player.camera.fovy, 40.0, smoothing)
 }
+
 
 player_change_state_playing :: proc () {
     player := &GLOBAL_STATE.player

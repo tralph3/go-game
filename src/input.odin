@@ -43,7 +43,7 @@ input_process :: proc () {
     // player_update_camera_position(player, mouse_wheel_delta, { -0.5, 0.0001 }, { board.position.x, board.height, board.position.y })
 }
 
-input_get_clicked_board_coord :: proc () -> (coord: [2]u32, ok: bool) {
+input_get_clicked_board_coord :: proc () -> (coord: [2]u32, hit: bool) {
     if !rl.IsMouseButtonPressed(.LEFT) {
         return {}, false
     }

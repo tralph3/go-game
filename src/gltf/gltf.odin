@@ -12,11 +12,6 @@ GLTF_MAGIC_NUMBER :: 0x46546C67
 GLTF_JSON_CHUNK :: 0x4E4F534A
 GLTF_VERSION :: 2
 
-GeneralError :: enum {
-    None = 0,
-    NodeNotFoundError,
-}
-
 ModelNodes :: struct {
     nodes: []struct {
         mesh: int,
@@ -106,24 +101,24 @@ get_model_nodes :: proc (file_path: string) -> (nodes: ModelNodes, err: ReadErro
     return nodes, nil
 }
 
-get_node_translation :: proc (nodes: ^ModelNodes, node_name: string) -> ([3]f32, GeneralError) {
+get_node_translation :: proc (nodes: ^ModelNodes, node_name: string) -> (translation: [3]f32, ok: bool) {
     for node in nodes.nodes {
         if node.name == node_name {
-            return node.translation, nil
+            return node.translation, true
         }
     }
 
-    return {}, .NodeNotFoundError
+    return {}, false
 }
 
-get_node_id :: proc (nodes: ^ModelNodes, node_name: string) -> (int, GeneralError) {
+get_node_id :: proc (nodes: ^ModelNodes, node_name: string) -> (id: int, ok: bool) {
     for node in nodes.nodes {
         if node.name == node_name {
-            return node.mesh, nil
+            return node.mesh, true
         }
     }
 
-    return {}, .NodeNotFoundError
+    return -1, false
 }
 
 delete_model_nodes :: proc (nodes: ^ModelNodes) {

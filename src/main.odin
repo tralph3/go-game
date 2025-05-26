@@ -42,7 +42,10 @@ main :: proc () {
     render_init_raylib()
     defer render_deinit_raylib()
 
-    assets_load_all()
+    if !assets_load_all() {
+        log.errorf("Failed loading assets")
+        return
+    }
     defer assets_unload_all()
 
     board, _ := board_new(19)
@@ -51,6 +54,7 @@ main :: proc () {
     shaders_init()
     models_init()
     world_init(&board)
+
     player_init({ -1.0, 0.0 }, 1.9, 1)
 
     for !rl.WindowShouldClose() {

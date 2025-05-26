@@ -35,17 +35,11 @@ Board :: struct {
     prev_board_state: []BoardState,
     black_captures: u32,
     white_captures: u32,
-}
-
-BoardObject :: struct {
-    board: Board,
-    position: [3]f32,
-    height: f32,
-    grid_size: [2]f32,
+    komi: f32,
 }
 
 board_count_score :: proc (board: ^Board) -> (black_score: f32, white_score: f32) {
-    white_score = 6.5           // komi
+    white_score = board.komi
     black_score = 0
 
     directions: [4][2]int = {
@@ -158,8 +152,8 @@ board_get_valid_moves :: proc (board: ^Board) -> [][2]u32 {
 board_new :: proc (size: u32, allocator: mem.Allocator = context.allocator) -> (board: Board, err: mem.Allocator_Error) {
     assert(size % 2 != 0 && size > 1)
 
-    board_data := make([]BoardState, size * size) or_return
-    board_prev_state := make([]BoardState, size * size) or_return
+    board_data := make([]BoardState, size * size, allocator) or_return
+    board_prev_state := make([]BoardState, size * size, allocator) or_return
 
     for i in 0..<len(board_data) {
         board_data[i] = .EMPTY
@@ -171,6 +165,7 @@ board_new :: proc (size: u32, allocator: mem.Allocator = context.allocator) -> (
     board.data = board_data
     board.next_stone = .BLACK
     board.prev_board_state = board_prev_state
+    board.komi = 6.5
 
     return board, nil
 }

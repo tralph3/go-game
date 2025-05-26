@@ -45,12 +45,14 @@ ShaderPaths :: [ShaderID][2]cstring {
         .LIGHTING = { "./assets/shaders/lighting.vert", "./assets/shaders/lighting.frag" },
 }
 
-assets_load_all :: proc () {
+assets_load_all :: proc () -> (ok: bool) {
     log.info("Loading assets...")
 
-    assets_load_models()
-    assets_load_sounds()
-    assets_load_shaders()
+    assets_load_models() or_return
+    assets_load_sounds() or_return
+    assets_load_shaders() or_return
+
+    return true
 }
 
 assets_unload_all :: proc () {
@@ -62,30 +64,49 @@ assets_unload_all :: proc () {
 }
 
 @(private="file")
-assets_load_models :: proc () {
+assets_load_models :: proc () -> (ok: bool) {
     log.info("Loading models...")
 
     for path, model_id in ModelPaths {
         GLOBAL_STATE.assets.models[model_id] = rl.LoadModel(path)
+        if !rl.IsModelValid(GLOBAL_STATE.assets.models[model_id]) {
+            log.errorf("Failed loading model: '%s'", path)
+            return false
+        }
     }
+
+    return true
 }
 
 @(private="file")
-assets_load_sounds :: proc () {
+assets_load_sounds :: proc () -> (ok: bool) {
     log.info("Loading sounds...")
 
     for path, sound_id in SoundPaths {
         GLOBAL_STATE.assets.sounds[sound_id] = rl.LoadSound(path)
+        if !rl.IsSoundValid(GLOBAL_STATE.assets.sounds[sound_id]) {
+            log.errorf("Failed loading sound: '%s'", path)
+            return false
+        }
     }
+
+    return true
 }
 
 @(private="file")
-assets_load_shaders :: proc () {
+assets_load_shaders :: proc () -> (ok: bool) {
     log.info("Loading shaders...")
 
     for paths, shader_id in ShaderPaths {
         GLOBAL_STATE.assets.shaders[shader_id] = rl.LoadShader(paths[0], paths[1])
+        // TODO: `IsShaderValid` seems to always return true
+        if !rl.IsShaderValid(GLOBAL_STATE.assets.shaders[shader_id]) {
+            log.errorf("Failed loading shader: '%s' | '%s'", paths[0], paths[1])
+            return false
+        }
     }
+
+    return true
 }
 
 @(private="file")
