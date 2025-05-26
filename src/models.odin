@@ -11,7 +11,7 @@ models_init :: proc () {
 }
 
 models_apply_shader :: proc () {
-    shader := &GLOBAL_STATE.assets.shaders[ShaderID.VISUAL]
+    shader := &GLOBAL_STATE.assets.shaders[.LIGHTING]
 
     for model in GLOBAL_STATE.assets.models {
         for material_id in 0..<model.materialCount {

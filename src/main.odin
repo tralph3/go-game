@@ -35,7 +35,6 @@ main :: proc () {
 		}
 	}
 
-    defer free_all(context.temp_allocator)
 
     GLOBAL_STATE.ctx = context
     defer state_free()
@@ -43,20 +42,22 @@ main :: proc () {
     render_init_raylib()
     defer render_deinit_raylib()
 
-    GLOBAL_STATE.assets = assets_load_all()
-    defer assets_unload_all(&GLOBAL_STATE.assets)
-
-    shaders_init()
-    models_init()
-    world_init()
-    player_init({ -1.0, 0.0 }, 1.9, 1)
+    assets_load_all()
+    defer assets_unload_all()
 
     board, _ := board_new(19)
     defer board_delete(&board)
+
+    shaders_init()
+    models_init()
+    world_init(&board)
+    player_init({ -1.0, 0.0 }, 1.9, 1)
 
     for !rl.WindowShouldClose() {
         shaders_update()
         player_update()
         render_world()
+
+        free_all(context.temp_allocator)
     }
 }

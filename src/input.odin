@@ -43,6 +43,32 @@ input_process :: proc () {
     // player_update_camera_position(player, mouse_wheel_delta, { -0.5, 0.0001 }, { board.position.x, board.height, board.position.y })
 }
 
+input_get_clicked_board_coord :: proc () -> (coord: [2]u32, ok: bool) {
+    if !rl.IsMouseButtonPressed(.LEFT) {
+        return {}, false
+    }
+
+    ray := rl.GetScreenToWorldRay(
+        rl.GetMousePosition(), GLOBAL_STATE.player.camera)
+
+    return {1, 1}, true
+
+    // collision := rl.GetRayCollisionQuad(ray,
+    //                                     { -board.grid_size.x * 1.1, board.height, -board.grid_size.y * 1.1 },
+    //                                     { -board.grid_size.x * 1.1, board.height,  board.grid_size.y * 1.1 },
+    //                                     {  board.grid_size.x * 1.1, board.height,  board.grid_size.y * 1.1 },
+    //                                     {  board.grid_size.x * 1.1, board.height, -board.grid_size.y * 1.1 },
+    //                                    )
+
+    // if collision.hit {
+    //     x := (collision.point.x + board.grid_size.x / 2) / tile_offset.x
+    //     y := (collision.point.z + board.grid_size.y / 2) / tile_offset.y
+
+    //     rx := u32(math.round(x))
+    //     ry := u32(math.round(y))
+    // }
+}
+
 input_get_movement_vector :: proc () -> (movement_vector: [3]f32) {
     if rl.IsKeyDown(.W) {
         movement_vector.x += 1
@@ -61,4 +87,8 @@ input_get_movement_vector :: proc () -> (movement_vector: [3]f32) {
     }
 
     return linalg.normalize(movement_vector)
+}
+
+input_should_toggle_sit :: proc () -> bool {
+    return rl.IsKeyPressed(.M)
 }

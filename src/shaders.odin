@@ -6,7 +6,7 @@ import "core:log"
 shaders_init :: proc () {
     log.info("Initializing shaders...")
 
-    shader := &GLOBAL_STATE.assets.shaders[ShaderID.VISUAL]
+    shader := &GLOBAL_STATE.assets.shaders[.LIGHTING]
 
     rl.SetShaderValue(
         shader^, rl.GetShaderLocation(shader^, "ambient"), &[4]f32{ 0.0, 0.0, 0.0, 1.0 }, .VEC4)
@@ -17,8 +17,8 @@ shaders_init :: proc () {
 
 shaders_update :: proc () {
     rl.SetShaderValue(
-        GLOBAL_STATE.assets.shaders[ShaderID.VISUAL],
-        rl.GetShaderLocation(GLOBAL_STATE.assets.shaders[ShaderID.VISUAL], "viewPos"),
+        GLOBAL_STATE.assets.shaders[.LIGHTING],
+        rl.GetShaderLocation(GLOBAL_STATE.assets.shaders[.LIGHTING], "viewPos"),
         &GLOBAL_STATE.player.camera.position,
         .VEC3
     )

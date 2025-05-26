@@ -32,6 +32,24 @@ render_world :: proc () {
 
     rl.BeginMode3D(GLOBAL_STATE.player.camera)
 
+    rl.DrawModelEx(
+        GLOBAL_STATE.room_object.model^,
+        GLOBAL_STATE.room_object.transform.position,
+        GLOBAL_STATE.room_object.transform.rotation_axis,
+        GLOBAL_STATE.room_object.transform.rotation_deg,
+        1.0,
+        rl.WHITE)
+
+    for board_object in GLOBAL_STATE.board_objects {
+        rl.DrawModelEx(
+            board_object.model^,
+            board_object.transform.position,
+            board_object.transform.rotation_axis,
+            board_object.transform.rotation_deg,
+            1.0,
+            rl.WHITE)
+    }
+
     for object in GLOBAL_STATE.objects {
         rl.DrawModelEx(
             object.model^,
@@ -64,6 +82,10 @@ render_world :: proc () {
     // }
 
     rl.EndMode3D()
+
+    when ODIN_DEBUG {
+        rl.DrawFPS(0, 0)
+    }
 
     rl.EndDrawing()
 }
