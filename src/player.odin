@@ -50,17 +50,17 @@ player_init :: proc (start_pos: [2]f32, speed, height: f32) {
         state = .ROAMING,
     }
 
-    player.callbacks[.ROAMING].move = player_move_roaming
-    player.callbacks[.PLAYING].move = player_move_null
-    player.callbacks[.MENU].move = player_move_null
-
+    player.callbacks[.ROAMING].move     = player_move_roaming
     player.callbacks[.ROAMING].interact = player_interact_roaming
-    player.callbacks[.PLAYING].interact = player_interact_playing
-    player.callbacks[.MENU].interact = player_interact_null
+    player.callbacks[.ROAMING].camera   = player_camera_roaming
 
-    player.callbacks[.ROAMING].camera = player_camera_roaming
-    player.callbacks[.PLAYING].camera = player_camera_playing
-    player.callbacks[.MENU].camera = player_interact_null
+    player.callbacks[.PLAYING].move     = player_move_null
+    player.callbacks[.PLAYING].interact = player_interact_playing
+    player.callbacks[.PLAYING].camera   = player_camera_playing
+
+    player.callbacks[.MENU].move     = player_move_null
+    player.callbacks[.MENU].interact = player_interact_null
+    player.callbacks[.MENU].camera   = player_interact_null
 
     player.current_board = &GLOBAL_STATE.board_objects[0]
 
