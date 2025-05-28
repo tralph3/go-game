@@ -4,8 +4,8 @@ import rl "vendor:raylib"
 import "core:math/linalg"
 import "core:log"
 
-render_init_raylib :: proc () {
-    log.info("Starting raylib...")
+render_init_renderer :: proc () {
+    log.info("Starting renderer...")
 
     rl.SetTraceLogLevel(.NONE)
     rl.SetConfigFlags({ .MSAA_4X_HINT })
@@ -19,8 +19,8 @@ render_init_raylib :: proc () {
     rl.InitAudioDevice()
 }
 
-render_deinit_raylib :: proc () {
-    log.info("Shutting down raylib...")
+render_deinit_renderer :: proc () {
+    log.info("Shutting down renderer...")
 
     rl.CloseAudioDevice()
     rl.CloseWindow()

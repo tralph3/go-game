@@ -39,11 +39,11 @@ main :: proc () {
     GLOBAL_STATE.ctx = context
     defer state_free()
 
-    render_init_raylib()
-    defer render_deinit_raylib()
+    render_init_renderer()
+    defer render_deinit_renderer()
 
     if !assets_load_all() {
-        log.errorf("Failed loading assets")
+        log.error("Failed loading assets")
         return
     }
     defer assets_unload_all()
