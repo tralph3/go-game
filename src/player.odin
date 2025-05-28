@@ -115,10 +115,16 @@ player_interact_playing :: proc () {
 }
 
 player_interact_roaming :: proc () {
-    if input_should_toggle_sit() {
-        player_change_state_playing()
+    board := input_get_clicked_board_object()
+
+    if board == nil {
         return
     }
+
+    player := &GLOBAL_STATE.player
+    player.current_board = board
+
+    player_change_state_playing()
 }
 
 player_move_null :: proc () {

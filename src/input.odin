@@ -43,6 +43,27 @@ input_process :: proc () {
     // player_update_camera_position(player, mouse_wheel_delta, { -0.5, 0.0001 }, { board.position.x, board.height, board.position.y })
 }
 
+input_get_clicked_board_object :: proc () -> ^BoardWorldObject {
+    if !rl.IsMouseButtonPressed(.LEFT) {
+        return nil
+    }
+
+    click: [2]f32 = { f32(rl.GetRenderWidth()) / 2.0, f32(rl.GetRenderHeight()) / 2.0 }
+    ray := rl.GetScreenToWorldRay(click, GLOBAL_STATE.player.camera)
+
+    for &board in GLOBAL_STATE.board_objects {
+        box := rl.GetModelBoundingBox(board.model^)
+        box.min += board.transform.position
+        box.max += board.transform.position
+
+        if rl.GetRayCollisionBox(ray, box).hit {
+            return &board
+        }
+    }
+
+    return nil
+}
+
 input_get_clicked_board_coord :: proc (board: ^BoardWorldObject) -> (coord: [2]u32, hit: bool) {
     if !rl.IsMouseButtonPressed(.LEFT) {
         return {}, false

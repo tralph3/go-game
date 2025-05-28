@@ -86,6 +86,10 @@ render_world :: proc () {
 
     rl.EndMode3D()
 
+    if GLOBAL_STATE.player.state == .ROAMING {
+        rl.DrawCircle(rl.GetRenderWidth() / 2, rl.GetRenderHeight() / 2, 1, rl.WHITE)
+    }
+
     when ODIN_DEBUG {
         rl.DrawFPS(0, 0)
     }
