@@ -100,8 +100,14 @@ player_interact_playing :: proc () {
         return
     }
 
-    coord, hit := input_get_clicked_board_coord()
+    player := &GLOBAL_STATE.player
+
+    coord, hit := input_get_clicked_board_coord(player.current_board)
     if !hit {
+        return
+    }
+
+    if err := board_set(player.current_board.board, coord.x, coord.y); err != nil {
         return
     }
 
@@ -147,7 +153,7 @@ player_camera_playing :: proc () {
     target := board_pos
     target.y = board_top_y
 
-    position_offset := [3]f32{ -1.25 + player.sitting_height, player.sitting_height, 0 }
+    position_offset := [3]f32{ 0, player.sitting_height, 1.25 - player.sitting_height }
 
     desired_pos := board_pos + position_offset
 

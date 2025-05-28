@@ -43,7 +43,7 @@ input_process :: proc () {
     // player_update_camera_position(player, mouse_wheel_delta, { -0.5, 0.0001 }, { board.position.x, board.height, board.position.y })
 }
 
-input_get_clicked_board_coord :: proc () -> (coord: [2]u32, hit: bool) {
+input_get_clicked_board_coord :: proc (board: ^BoardWorldObject) -> (coord: [2]u32, hit: bool) {
     if !rl.IsMouseButtonPressed(.LEFT) {
         return {}, false
     }
@@ -51,22 +51,32 @@ input_get_clicked_board_coord :: proc () -> (coord: [2]u32, hit: bool) {
     ray := rl.GetScreenToWorldRay(
         rl.GetMousePosition(), GLOBAL_STATE.player.camera)
 
-    return {1, 1}, true
+    half_area := board.play_area / 2
+    half_scaled := half_area * 1.05 // give a bit of margin so you
+                                    // don't have to be extremely
+                                    // precise to play in the corners
+    board_top := board.transform.position.y + board.height
 
-    // collision := rl.GetRayCollisionQuad(ray,
-    //                                     { -board.grid_size.x * 1.1, board.height, -board.grid_size.y * 1.1 },
-    //                                     { -board.grid_size.x * 1.1, board.height,  board.grid_size.y * 1.1 },
-    //                                     {  board.grid_size.x * 1.1, board.height,  board.grid_size.y * 1.1 },
-    //                                     {  board.grid_size.x * 1.1, board.height, -board.grid_size.y * 1.1 },
-    //                                    )
+    top_left: [3]f32     = { board.transform.position.x - half_scaled.x, board_top, board.transform.position.z - half_scaled.y }
+    bottom_left: [3]f32  = { board.transform.position.x - half_scaled.x, board_top, board.transform.position.z + half_scaled.y }
+    bottom_right: [3]f32 = { board.transform.position.x + half_scaled.x, board_top, board.transform.position.z + half_scaled.y }
+    top_right: [3]f32    = { board.transform.position.x + half_scaled.x, board_top, board.transform.position.z - half_scaled.y }
 
-    // if collision.hit {
-    //     x := (collision.point.x + board.grid_size.x / 2) / tile_offset.x
-    //     y := (collision.point.z + board.grid_size.y / 2) / tile_offset.y
+    collision := rl.GetRayCollisionQuad(ray, top_left, bottom_left, bottom_right, top_right)
 
-    //     rx := u32(math.round(x))
-    //     ry := u32(math.round(y))
-    // }
+    if !collision.hit {
+        return {}, false
+    }
+
+    tile_offset := board.play_area / f32(board.board.size - 1)
+
+    x := (collision.point.x + half_area.x - board.transform.position.x) / tile_offset.x
+    y := (collision.point.z + half_area.y - board.transform.position.z) / tile_offset.y
+
+    rx := u32(math.round(x))
+    ry := u32(math.round(y))
+
+    return {rx, ry}, true
 }
 
 input_get_movement_vector :: proc () -> (movement_vector: [3]f32) {

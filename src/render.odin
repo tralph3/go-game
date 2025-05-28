@@ -48,6 +48,30 @@ render_world :: proc () {
             board_object.transform.rotation_deg,
             1.0,
             rl.WHITE)
+
+        half_area := board_object.play_area / 2
+        tile_offset := board_object.play_area / f32(board_object.board.size - 1)
+        board_top := board_object.transform.position.y + board_object.height
+
+        for y in 0..<board_object.board.size {
+            for x in 0..<board_object.board.size {
+                model: rl.Model
+                board_value := board_get(board_object.board, x, y)
+
+                if (board_value == .WHITE) {
+                    model = GLOBAL_STATE.assets.models[.WHITE_STONE]
+                } else if (board_value == .BLACK) {
+                    model = GLOBAL_STATE.assets.models[.BLACK_STONE]
+                } else {
+                    continue
+                }
+
+                draw_x := f32(x) * tile_offset.x - half_area.x + board_object.transform.position.x
+                draw_y := f32(y) * tile_offset.y - half_area.y + board_object.transform.position.z
+
+                rl.DrawModel(model, {draw_x, board_top, draw_y}, 1, rl.WHITE)
+            }
+        }
     }
 
     for object in GLOBAL_STATE.objects {
@@ -59,27 +83,6 @@ render_world :: proc () {
             1.0,
             rl.WHITE)
     }
-
-    // for y in 0..<board.board.size {
-    //     for x in 0..<board.board.size {
-    //         model: rl.Model
-    //         board_value := board_get(&board.board, x, y)
-
-    //         if (board_value == .WHITE) {
-    //             model = white_stone_model
-    //         } else if (board_value == .BLACK) {
-    //             model = black_stone_model
-    //         } else {
-    //             continue
-    //         }
-
-    //         offset := (f32(board.board.size) - 1.0) / 2.0
-    //         draw_x := tile_offset.x * (f32(x) - offset)
-    //         draw_y := tile_offset.y * (f32(y) - offset)
-
-    //         rl.DrawModel(model, {draw_x, board.height, draw_y}, 1, rl.WHITE)
-    //     }
-    // }
 
     rl.EndMode3D()
 

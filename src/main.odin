@@ -35,7 +35,6 @@ main :: proc () {
 		}
 	}
 
-
     GLOBAL_STATE.ctx = context
     defer state_free()
 
