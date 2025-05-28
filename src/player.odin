@@ -153,7 +153,7 @@ player_camera_playing :: proc () {
 
     board_pos := board.transform.position
 
-    min_height := board.height + 0.3
+    min_height := board.height + 0.35
     max_height := board.height + 0.9
 
     player.sitting_height += rl.GetMouseWheelMove() * 0.1
