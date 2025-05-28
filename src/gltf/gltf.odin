@@ -17,6 +17,7 @@ ModelNodes :: struct {
         mesh: int,
         name: string,
         translation: [3]f32,
+        extras: json.Value,
     },
 }
 
@@ -121,9 +122,20 @@ get_node_id :: proc (nodes: ^ModelNodes, node_name: string) -> (id: int, ok: boo
     return -1, false
 }
 
+get_node_extra :: proc (nodes: ^ModelNodes, node_id: int, extra: string) -> json.Value {
+    extras := nodes.nodes[node_id].extras
+    #partial switch type in extras {
+    case json.Object:
+        return extras.(json.Object)[extra]
+    }
+
+    return json.Null{}
+}
+
 delete_model_nodes :: proc (nodes: ^ModelNodes) {
     for node in nodes.nodes {
         delete(node.name)
+        json.destroy_value(node.extras)
     }
 
     delete(nodes.nodes)

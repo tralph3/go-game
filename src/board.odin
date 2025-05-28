@@ -131,11 +131,11 @@ board_get_valid_moves :: proc (board: ^Board) -> [][2]u32 {
     valid_moves: [dynamic][2]u32
 
     cloned_board, _ := board_clone(board)
-    defer board_delete(&cloned_board)
+    defer board_delete(cloned_board)
 
     for y in 0..<board.size {
         for x in 0..<board.size {
-            set_error := board_set(&cloned_board, x, y)
+            set_error := board_set(cloned_board, x, y)
 
             if set_error == nil {
                 append(&valid_moves, [2]u32{x, y})
@@ -149,8 +149,10 @@ board_get_valid_moves :: proc (board: ^Board) -> [][2]u32 {
     return valid_moves[:]
 }
 
-board_new :: proc (size: u32, allocator: mem.Allocator = context.allocator) -> (board: Board, err: mem.Allocator_Error) {
+board_new :: proc (size: u32, allocator: mem.Allocator = context.allocator) -> (board: ^Board, err: mem.Allocator_Error) {
     assert(size % 2 != 0 && size > 1)
+
+    board = new(Board)
 
     board_data := make([]BoardState, size * size, allocator) or_return
     board_prev_state := make([]BoardState, size * size, allocator) or_return
@@ -181,6 +183,8 @@ board_reset :: proc (board: ^Board) {
 board_delete :: proc (board: ^Board) {
     delete(board.data)
     delete(board.prev_board_state)
+
+    free(board)
 }
 
 board_get :: proc (board: ^Board, x, y: u32) -> BoardState {
@@ -200,7 +204,7 @@ board_set_no_check :: proc (board: ^Board, x, y: u32, state: BoardState) {
 
 board_set_no_ko :: proc (board: ^Board, x, y: u32) -> BoardSetError {
     tmp_board, _ := board_clone(board)
-    defer board_delete(&tmp_board)
+    defer board_delete(tmp_board)
 
     board_state := board_get(board, x, y)
 
@@ -272,9 +276,9 @@ board_set_no_ko :: proc (board: ^Board, x, y: u32) -> BoardSetError {
 
 board_set :: proc (board: ^Board, x, y: u32) -> BoardSetError {
     cloned_board, _ := board_clone(board)
-    defer board_delete(&cloned_board)
+    defer board_delete(cloned_board)
 
-    board_set_no_ko(&cloned_board, x, y)
+    board_set_no_ko(cloned_board, x, y)
 
     ko := true
     for i in 0..<len(cloned_board.data) {
@@ -291,7 +295,7 @@ board_set :: proc (board: ^Board, x, y: u32) -> BoardSetError {
     return board_set_no_ko(board, x, y)
 }
 
-board_clone :: proc (board: ^Board, allocator: mem.Allocator = context.allocator) -> (Board, mem.Allocator_Error) {
+board_clone :: proc (board: ^Board, allocator: mem.Allocator = context.allocator) -> (^Board, mem.Allocator_Error) {
     new_copy, err := board_new(board.size, allocator)
     if err != nil {
         return new_copy, err

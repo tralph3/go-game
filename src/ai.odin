@@ -41,12 +41,12 @@ run_mcts_ai :: proc (board: ^Board, iterations: u32) -> [2]u32 {
     defer delete_node(&root)
 
     testing_board, _ := board_clone(board)
-    defer board_delete(&testing_board)
+    defer board_delete(testing_board)
 
     for i in 0..<iterations {
         fmt.printfln("Processing iteration %d...", i)
 
-        iterate(&testing_board, &root)
+        iterate(testing_board, &root)
 
         mem.copy_non_overlapping(slice.as_ptr(testing_board.prev_board_state), slice.as_ptr(board.prev_board_state), len(board.data))
         mem.copy_non_overlapping(slice.as_ptr(testing_board.data), slice.as_ptr(board.data), len(board.data))

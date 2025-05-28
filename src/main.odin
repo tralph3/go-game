@@ -28,7 +28,7 @@ main :: proc () {
 			if len(track.allocation_map) > 0 {
 				log.errorf("=== %v allocations not freed: ===\n", len(track.allocation_map))
 				for _, entry in track.allocation_map {
-					log.errorf("- %v bytes @ %v\n", entry.size, entry.location)
+					log.errorf("- %v bytes @ %v", entry.size, entry.location)
 				}
 			}
 
@@ -48,12 +48,14 @@ main :: proc () {
     }
     defer assets_unload_all()
 
-    board, _ := board_new(19)
-    defer board_delete(&board)
-
     shaders_init()
     models_init()
-    world_init(&board)
+
+    if !world_init() {
+        log.error("Failed initializing world objects")
+        return
+    }
+    defer world_delete_board_world_objects()
 
     player_init({ -1.0, 0.0 }, 1.9, 1)
 
