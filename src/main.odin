@@ -12,6 +12,7 @@ import "core:time"
 import "base:runtime"
 import "core:log"
 
+import "gtp"
 import "gltf"
 
 main :: proc () {
