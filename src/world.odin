@@ -22,6 +22,7 @@ BoardWorldObject :: struct {
     board: ^Board,
     height: f32,
     play_area: [2]f32,
+    hovered_coord: [2]i32,
 }
 
 RoomWorldObject :: struct {
@@ -32,7 +33,7 @@ world_init :: proc () -> (ok: bool) {
     log.info("Initializing world objects...")
 
     GLOBAL_STATE.room_object = RoomWorldObject{
-        model = &GLOBAL_STATE.assets.models[ModelID.ROOM]
+        model = &GLOBAL_STATE.assets.models[ModelID.ROOM],
     }
 
     board := world_make_board_world_object() or_return

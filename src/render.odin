@@ -52,24 +52,27 @@ render_world :: proc () {
         half_area := board_object.play_area / 2
         tile_offset := board_object.play_area / f32(board_object.board.size - 1)
         board_top := board_object.transform.position.y + board_object.height
+        player := &GLOBAL_STATE.player
 
         for y in 0..<board_object.board.size {
             for x in 0..<board_object.board.size {
-                model: rl.Model
+                opacity: u8 = 255
                 board_value := board_get(board_object.board, x, y)
+                model, get_model_ok := get_model_from_stone_type(board_value)
 
-                if (board_value == .WHITE) {
-                    model = GLOBAL_STATE.assets.models[.WHITE_STONE]
-                } else if (board_value == .BLACK) {
-                    model = GLOBAL_STATE.assets.models[.BLACK_STONE]
-                } else {
-                    continue
+                if !get_model_ok {
+                    if board_object.hovered_coord == { i32(x), i32(y) } {
+                        model, _ = get_model_from_stone_type(board_object.board.next_stone)
+                        opacity = 80
+                    } else {
+                        continue
+                    }
                 }
 
                 draw_x := f32(x) * tile_offset.x - half_area.x + board_object.transform.position.x
                 draw_y := f32(y) * tile_offset.y - half_area.y + board_object.transform.position.z
 
-                rl.DrawModel(model, {draw_x, board_top, draw_y}, 1, rl.WHITE)
+                rl.DrawModel(model, {draw_x, board_top, draw_y}, 1, { 255, 255, 255, opacity })
             }
         }
     }
@@ -95,4 +98,16 @@ render_world :: proc () {
     }
 
     rl.EndDrawing()
+}
+
+@(private="file")
+get_model_from_stone_type :: proc (stone_type: BoardState) -> (model: rl.Model, ok: bool) {
+    #partial switch stone_type {
+    case .BLACK:
+        return GLOBAL_STATE.assets.models[.BLACK_STONE], true
+    case .WHITE:
+        return GLOBAL_STATE.assets.models[.WHITE_STONE], true
+    }
+
+    return
 }

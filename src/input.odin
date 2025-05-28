@@ -64,10 +64,8 @@ input_get_clicked_board_object :: proc () -> ^BoardWorldObject {
     return nil
 }
 
-input_get_clicked_board_coord :: proc (board: ^BoardWorldObject) -> (coord: [2]u32, hit: bool) {
-    if !rl.IsMouseButtonPressed(.LEFT) {
-        return {}, false
-    }
+input_get_board_coord :: proc (board: ^BoardWorldObject) -> (coord: [2]u32, hit, click: bool) {
+    click = rl.IsMouseButtonPressed(.LEFT)
 
     ray := rl.GetScreenToWorldRay(
         rl.GetMousePosition(), GLOBAL_STATE.player.camera)
@@ -86,7 +84,7 @@ input_get_clicked_board_coord :: proc (board: ^BoardWorldObject) -> (coord: [2]u
     collision := rl.GetRayCollisionQuad(ray, top_left, bottom_left, bottom_right, top_right)
 
     if !collision.hit {
-        return {}, false
+        return
     }
 
     tile_offset := board.play_area / f32(board.board.size - 1)
@@ -97,7 +95,7 @@ input_get_clicked_board_coord :: proc (board: ^BoardWorldObject) -> (coord: [2]u
     rx := u32(math.round(x))
     ry := u32(math.round(y))
 
-    return {rx, ry}, true
+    return {rx, ry}, true, click
 }
 
 input_get_movement_vector :: proc () -> (movement_vector: [3]f32) {

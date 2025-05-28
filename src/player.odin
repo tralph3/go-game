@@ -102,10 +102,15 @@ player_interact_playing :: proc () {
 
     player := &GLOBAL_STATE.player
 
-    coord, hit := input_get_clicked_board_coord(player.current_board)
-    if !hit {
-        return
+    coord, hit, clicked := input_get_board_coord(player.current_board)
+
+    if hit {
+        player.current_board.hovered_coord = { i32(coord.x), i32(coord.y) }
+    } else {
+        player.current_board.hovered_coord = { -1, -1 }
     }
+
+    if !clicked { return }
 
     if err := board_set(player.current_board.board, coord.x, coord.y); err != nil {
         return
@@ -181,6 +186,7 @@ player_change_state_playing :: proc () {
 
 player_change_state_roaming :: proc () {
     player := &GLOBAL_STATE.player
+    player.current_board.hovered_coord = { -1, -1 }
 
     rl.DisableCursor()
 

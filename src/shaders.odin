@@ -20,6 +20,6 @@ shaders_update :: proc () {
         GLOBAL_STATE.assets.shaders[.LIGHTING],
         rl.GetShaderLocation(GLOBAL_STATE.assets.shaders[.LIGHTING], "viewPos"),
         &GLOBAL_STATE.player.camera.position,
-        .VEC3
+        .VEC3,
     )
 }
