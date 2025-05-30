@@ -5,6 +5,7 @@ import "core:math"
 import "core:math/linalg"
 import "core:log"
 import "core:fmt"
+import "gtp"
 
 PlayerMoveCallback :: proc ()
 PlayerInteractCallback :: proc ()
@@ -31,7 +32,7 @@ Player :: struct {
     direction: [3]f32,
     callbacks: [PlayerState]PlayerStateCallbacks,
     state: PlayerState,
-    current_board: ^BoardWorldObject,
+    current_controller: ^BoardController,
 }
 
 player_init :: proc (start_pos: [2]f32, speed, height: f32) {
@@ -43,6 +44,7 @@ player_init :: proc (start_pos: [2]f32, speed, height: f32) {
             up = { 0.0, 1.0, 0.0 },
             fovy = 90.0,
             projection = .PERSPECTIVE,
+            target = { 0, height, 0 },
         },
         speed = 0,
         max_speed = speed,
@@ -62,7 +64,7 @@ player_init :: proc (start_pos: [2]f32, speed, height: f32) {
     player.callbacks[.MENU].interact = player_interact_null
     player.callbacks[.MENU].camera   = player_interact_null
 
-    player.current_board = &GLOBAL_STATE.board_objects[0]
+    player.current_controller = GLOBAL_STATE.board_controllers[0]
 
     GLOBAL_STATE.player = player
 }
@@ -102,32 +104,34 @@ player_interact_playing :: proc () {
 
     player := &GLOBAL_STATE.player
 
-    coord, hit, clicked := input_get_board_coord(player.current_board)
+    coord, hit, clicked := input_get_board_coord(player.current_controller)
 
-    if hit {
-        player.current_board.hovered_coord = { i32(coord.x), i32(coord.y) }
+    if hit && player_is_current_turn() {
+        player.current_controller.object.hovered_coord = { i32(coord.x), i32(coord.y) }
     } else {
-        player.current_board.hovered_coord = { -1, -1 }
+        player.current_controller.object.hovered_coord = { -1, -1 }
     }
 
-    if !clicked { return }
+    if !clicked || !hit || !player_is_current_turn() { return }
 
-    if err := board_set(player.current_board.board, coord.x, coord.y); err != nil {
+    if err := board_set(player.current_controller.board, coord.x, coord.y); err != nil {
         return
+    } else {
+        player.current_controller.commands.move(player.current_controller, coord.x, coord.y)
     }
 
     sound_play_random(.STONE_PLACE_1, .STONE_PLACE_LAST)
 }
 
 player_interact_roaming :: proc () {
-    board := input_get_clicked_board_object()
+    board := input_get_clicked_controller()
 
     if board == nil {
         return
     }
 
     player := &GLOBAL_STATE.player
-    player.current_board = board
+    player.current_controller = board
 
     player_change_state_playing()
 }
@@ -149,17 +153,17 @@ player_camera_roaming :: proc () {
 
 player_camera_playing :: proc () {
     player := &GLOBAL_STATE.player
-    board := player.current_board
+    object := player.current_controller.object
 
-    board_pos := board.transform.position
+    board_pos := object.transform.position
 
-    min_height := board.height + 0.35
-    max_height := board.height + 0.9
+    min_height := object.height + 0.35
+    max_height := object.height + 0.9
 
     player.sitting_height += rl.GetMouseWheelMove() * 0.1
     player.sitting_height = clamp(player.sitting_height, min_height, max_height)
 
-    board_top_y := board_pos.y + board.height
+    board_top_y := board_pos.y + object.height
 
     target := board_pos
     target.y = board_top_y
@@ -186,10 +190,17 @@ player_change_state_playing :: proc () {
 
 player_change_state_roaming :: proc () {
     player := &GLOBAL_STATE.player
-    player.current_board.hovered_coord = { -1, -1 }
+    player.current_controller.object.hovered_coord = { -1, -1 }
 
     rl.DisableCursor()
 
     player.state = .ROAMING
     player.speed = 0
+}
+
+player_is_current_turn :: proc () -> bool {
+    player := &GLOBAL_STATE.player
+
+    return (player.current_controller.board.next_stone == .BLACK && player.current_controller.side == .BLACK) ||
+        (player.current_controller.board.next_stone == .WHITE && player.current_controller.side == .WHITE)
 }

@@ -11,6 +11,7 @@ import "core:thread"
 import "core:time"
 import "base:runtime"
 import "core:log"
+import "core:strings"
 
 import "gtp"
 import "gltf"
@@ -26,9 +27,9 @@ main :: proc () {
 
 		defer {
 			if len(track.allocation_map) > 0 {
-				log.errorf("=== %v allocations not freed: ===\n", len(track.allocation_map))
+				log.errorf("=== %v allocations not freed ===\n", len(track.allocation_map))
 				for _, entry in track.allocation_map {
-					log.errorf("- %v bytes @ %v", entry.size, entry.location)
+					log.errorf("%v bytes @ %v", entry.size, entry.location)
 				}
 			}
 
@@ -55,7 +56,9 @@ main :: proc () {
         log.error("Failed initializing world objects")
         return
     }
-    defer world_delete_board_world_objects()
+    defer board_controller_free_all()
+
+    board_configure_client_type(GLOBAL_STATE.board_controllers[0], .GTP)
 
     player_init({ -1.0, 0.0 }, 1.9, 1)
 

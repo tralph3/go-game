@@ -40,37 +40,37 @@ render_world :: proc () {
         1.0,
         rl.WHITE)
 
-    for board_object in GLOBAL_STATE.board_objects {
+    for controller in GLOBAL_STATE.board_controllers {
         rl.DrawModelEx(
-            board_object.model^,
-            board_object.transform.position,
-            board_object.transform.rotation_axis,
-            board_object.transform.rotation_deg,
+            controller.object.model^,
+            controller.object.transform.position,
+            controller.object.transform.rotation_axis,
+            controller.object.transform.rotation_deg,
             1.0,
             rl.WHITE)
 
-        half_area := board_object.play_area / 2
-        tile_offset := board_object.play_area / f32(board_object.board.size - 1)
-        board_top := board_object.transform.position.y + board_object.height
+        half_area := controller.object.play_area / 2
+        tile_offset := controller.object.play_area / f32(controller.board.size - 1)
+        board_top := controller.object.transform.position.y + controller.object.height
         player := &GLOBAL_STATE.player
 
-        for y in 0..<board_object.board.size {
-            for x in 0..<board_object.board.size {
+        for y in 0..<controller.board.size {
+            for x in 0..<controller.board.size {
                 opacity: u8 = 255
-                board_value := board_get(board_object.board, x, y)
+                board_value := board_get(controller.board, x, y)
                 model, get_model_ok := get_model_from_stone_type(board_value)
 
                 if !get_model_ok {
-                    if board_object.hovered_coord == { i32(x), i32(y) } {
-                        model, _ = get_model_from_stone_type(board_object.board.next_stone)
+                    if controller.object.hovered_coord == { i32(x), i32(y) } {
+                        model, _ = get_model_from_stone_type(controller.board.next_stone)
                         opacity = 80
                     } else {
                         continue
                     }
                 }
 
-                draw_x := f32(x) * tile_offset.x - half_area.x + board_object.transform.position.x
-                draw_y := f32(y) * tile_offset.y - half_area.y + board_object.transform.position.z
+                draw_x := f32(x) * tile_offset.x - half_area.x + controller.object.transform.position.x
+                draw_y := f32(y) * tile_offset.y - half_area.y + controller.object.transform.position.z
 
                 rl.DrawModel(model, {draw_x, board_top, draw_y}, 1, { 255, 255, 255, opacity })
             }
