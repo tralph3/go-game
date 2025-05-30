@@ -64,6 +64,7 @@ player_init :: proc (start_pos: [2]f32, speed, height: f32) {
     player.callbacks[.MENU].interact = player_interact_null
     player.callbacks[.MENU].camera   = player_interact_null
 
+    assert(len(GLOBAL_STATE.board_controllers) >= 1)
     player.current_controller = GLOBAL_STATE.board_controllers[0]
 
     GLOBAL_STATE.player = player
