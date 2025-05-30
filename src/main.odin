@@ -63,6 +63,7 @@ main :: proc () {
     player_init({ -1.0, 0.0 }, 1.9, 1)
 
     for !rl.WindowShouldClose() {
+        board_controllers_make_all_pending_moves()
         shaders_update()
         player_update()
         render_world()
