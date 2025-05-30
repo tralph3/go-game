@@ -64,7 +64,7 @@ client_read_events :: proc (client: ^GTPClient) {
 
         assert(strings.starts_with(str, "="), str)
 
-        response := strings.clone(str[2:])
+        response := str[2:]
 
         client.event_callback(command, response, client.user_data)
     }

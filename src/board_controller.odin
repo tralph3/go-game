@@ -80,7 +80,6 @@ board_configure_client_type :: proc (controller: ^BoardController, type: Control
         controller.client = client
         gtp.client_configure(client, controller.board.size, controller.board.komi, proc (command, response: string, user_data: rawptr) {
             defer delete(command)
-            defer delete(response)
 
             controller := (^BoardController)(user_data)
 
