@@ -125,14 +125,14 @@ player_interact_playing :: proc () {
 }
 
 player_interact_roaming :: proc () {
-    board := input_get_clicked_controller()
+    controller := input_get_clicked_controller()
 
-    if board == nil {
+    if controller == nil {
         return
     }
 
     player := &GLOBAL_STATE.player
-    player.current_controller = board
+    player.current_controller = controller
 
     player_change_state_playing()
 }
