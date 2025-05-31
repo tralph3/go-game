@@ -10,6 +10,12 @@ SGF_SAMPLE_SIMPLE :: "(;FF[4]GM[1]SZ[19])"
 SGF_SAMPLE_WITH_CHILD :: "(;FF[4]GM[1];B[aa];W[bb](;B[cc])(;B[dd]))"
 SGF_SAMPLE_INVALID_TOKEN :: "(;FF[4]GM[1]SZ[19]@)"
 SGF_SAMPLE_UNEXPECTED_EOF :: "(;FF[4]GM[1]SZ[19]"
+SGF_SAMPLE_COMPLEX_COMMENT :: `(;C[Meijin NR: yeah, k4 is won\
+derful
+sweat NR: thank you! :\)
+dada NR: yup. I like this move too. It's a move only to be expected from a pro. I really like it :)
+jansteen 4d: Can anyone\
+ explain [me\] k4?])`
 
 to_byte_array :: proc (str: string) -> []byte {
     return slice.from_ptr(raw_data(str), len(str))
@@ -46,6 +52,20 @@ parse_tree_with_children_test :: proc(t: ^testing.T) {
 
     testing.expect_value(t, child1.nodes[0]["B"], "cc")
     testing.expect_value(t, child2.nodes[0]["B"], "dd")
+}
+
+@(test)
+parse_complex_comment_test :: proc (t: ^testing.T) {
+    root, _, err := tree_parse(to_byte_array(SGF_SAMPLE_COMPLEX_COMMENT))
+    defer tree_delete(root)
+
+    tree := root.children[0]
+
+    testing.expect_value(t, err, nil)
+    testing.expect_value(t, tree.nodes[0]["C"], `Meijin NR: yeah, k4 is wonderful
+sweat NR: thank you! :)
+dada NR: yup. I like this move too. It's a move only to be expected from a pro. I really like it :)
+jansteen 4d: Can anyone explain [me] k4?`)
 }
 
 @(test)
