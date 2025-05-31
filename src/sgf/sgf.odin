@@ -30,7 +30,6 @@ parse_from_file :: proc (path: string) -> (tree: Tree, err: Error) {
     tree, _, err = tree_parse(contents)
     if err != nil {
         tree_delete(tree)
-        return
     }
 
     return
@@ -146,7 +145,7 @@ value_parse :: proc (contents: []byte) -> (val: string, end_index: int, err: Err
             break
         } else if is_escape_character(contents, index) {
             continue
-        } else if char == '\n' && index != 0 && is_escape_character(contents, index -1 ) {
+        } else if char == '\n' && index != 0 && is_escape_character(contents, index - 1) {
             continue
         }
 
