@@ -5,6 +5,7 @@ import "core:fmt"
 import "core:slice"
 import "core:strings"
 import "core:bytes"
+import "sgf"
 
 BoardSetError :: enum u8 {
     NIL,
@@ -35,6 +36,7 @@ Board :: struct {
     prev_board_state: []BoardState,
     black_captures: u32,
     white_captures: u32,
+    moves: sgf.Tree,
     komi: f32,
 }
 
