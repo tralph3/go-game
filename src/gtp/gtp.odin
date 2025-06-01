@@ -37,6 +37,7 @@ Side :: enum {
 
 client_read_events :: proc (client: ^GTPClient) {
     for {
+        if chan.is_closed(client.command_channel) { break }
         command, ok := chan.recv(chan.as_recv(client.command_channel))
         if !ok {
             delete(command)
@@ -146,13 +147,22 @@ client_delete :: proc (client: ^GTPClient) {
     _ = os2.process_kill(client.process)
     _ = os2.process_close(client.process)
 
-    chan.destroy(client.command_channel)
+    chan.close(client.command_channel)
 
     os2.close(client.stdin_w)
     os2.close(client.stdout_r)
 
-    thread.terminate(client.event_thread, 0)
+    thread.join(client.event_thread)
     thread.destroy(client.event_thread)
+
+    // clear channel buffer
+    for {
+        c, ok := chan.try_recv(client.command_channel)
+        if !ok { break }
+        delete(c)
+    }
+
+    chan.destroy(client.command_channel)
 
     free(client)
 }
