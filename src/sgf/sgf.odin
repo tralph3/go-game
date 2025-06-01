@@ -5,7 +5,7 @@ import "core:strings"
 import "core:mem"
 import "core:fmt"
 
-Node :: map[string]string
+Node :: map[string][dynamic]string
 
 Tree :: struct {
     nodes: [dynamic]Node,
@@ -27,7 +27,10 @@ parse_from_file :: proc (path: string) -> (tree: Tree, err: Error) {
     contents := os2.read_entire_file_from_path(path, context.allocator) or_return
     defer delete(contents)
 
-    tree, _, err = tree_parse(contents)
+    contents_str := strings.string_from_ptr(raw_data(contents), len(contents))
+    start_idx := strings.index(contents_str, "(")
+
+    tree, _, err = tree_parse(contents[start_idx + 1:])
     if err != nil {
         tree_delete(tree)
     }
@@ -77,9 +80,7 @@ node_parse :: proc (contents: []byte) -> (node: Node, end_index: int, err: Error
     clear(&identifier)
     defer delete(identifier)
 
-    defer if err != nil {
-        node_delete(&node)
-    }
+    last_identifier: string = ""
 
     for {
         if index >= len(contents) {
@@ -91,12 +92,18 @@ node_parse :: proc (contents: []byte) -> (node: Node, end_index: int, err: Error
         defer index += 1
 
         if char == '[' {
+            key: string
             if len(identifier) == 0 {
-                err = .UnexpectedToken
-                return
+                if last_identifier == "" {
+                    err = .UnexpectedToken
+                    return
+                }
+
+                key = strings.clone(last_identifier)
+            } else {
+                key = strings.clone_from_ptr(raw_data(identifier), len(identifier)) or_return
             }
 
-            key := strings.clone_from_ptr(raw_data(identifier), len(identifier)) or_return
             val, end_index, parse_error := value_parse(contents[index + 1:])
             if parse_error != nil {
                 delete(key)
@@ -104,7 +111,21 @@ node_parse :: proc (contents: []byte) -> (node: Node, end_index: int, err: Error
 
             index += end_index + 1
 
-            map_insert(&node, key, val)
+            key_ptr, _, just_inserted := map_entry(&node, key) or_return
+
+            defer if !just_inserted {
+                // key was already present, so we would leak memory if
+                // we don't free the repeats. this should
+                // theoretically never happen since, according to the
+                // spec, you can only have one of each property per
+                // node, but OGS stores labels this way, so i must
+                // support it...
+                delete(key)
+            }
+
+            append(&node[key], val) or_return
+
+            last_identifier = key_ptr^
 
             clear(&identifier)
         } else if (char >= 'A' && char <= 'Z') && len(identifier) < 2 {
@@ -179,9 +200,13 @@ is_escape_character :: proc (contents: []byte, pos: int) -> bool {
 }
 
 node_delete :: proc (node: ^Node) {
-    for key, val in node {
+    for key, vals in node {
+        for val in vals {
+            delete(val)
+        }
+
         delete(key)
-        delete(val)
+        delete(vals)
     }
 
     delete(node^)
