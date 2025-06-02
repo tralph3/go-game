@@ -2,7 +2,13 @@ package socketio
 
 import "core:c"
 
-foreign import sio "system:socketio.a"
+when ODIN_OS == .Windows {
+    foreign import sio "system:libsocketio.lib"
+} else when ODIN_OS == .Darwin {
+    foreign import sio "system:socketio"
+} else {
+    foreign import sio "system:socketio.a"
+}
 
 Client :: distinct rawptr
 Socket :: distinct rawptr

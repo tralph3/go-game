@@ -1,4 +1,4 @@
-name: Build Odin Project
+name: Build
 
 on:
   push:
@@ -13,37 +13,44 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-13]
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Dependencies (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt update
-          sudo apt install -y g++ binutils
-          curl -L https://github.com/odin-lang/Odin/releases/download/dev-2025-04/odin-ubuntu-amd64-dev-2025-04.zip -o odin.zip
-          unzip odin.zip -d odin
-          echo "$GITHUB_WORKSPACE/odin" >> $GITHUB_PATH
+      - name: Install Odin
+        uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release: dev-2025-04
 
-      - name: Install Dependencies (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew install gcc binutils
-          curl -L https://github.com/odin-lang/Odin/releases/download/dev-2025-04/odin-macos-amd64-dev-2025-04.zip -o odin.zip
-          unzip odin.zip -d odin
-          echo "$GITHUB_WORKSPACE/odin" >> $GITHUB_PATH
-
-      - name: Install Dependencies (Windows)
+      - name: Install MSVC (Windows)
         if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          choco install mingw -y
-          Invoke-WebRequest -Uri https://github.com/odin-lang/Odin/releases/download/dev-2025-04/odin-windows-amd64-dev-2025-04.zip -OutFile odin.zip
-          Expand-Archive -Path odin.zip -DestinationPath odin
-          echo "$env:GITHUB_WORKSPACE\\odin" | Out-File -Append $env:GITHUB_PATH
+        uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Build with Odin
-        run: odin run build.odin -file
+      - name: Install vcpkg (Windows)
+        if: runner.os == 'Windows'
+        uses: lukka/run-vcpkg@v11
+        with:
+          doNotCache: false
+          runVcpkgInstall: false
+          vcpkgGitCommitId: ce613c41372b23b1f51333815feb3edd87ef8a8b
+
+      - name: Install static OpenSSL (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          vcpkg\vcpkg install openssl:x64-windows-static
+
+      - name: Build debug
+        run: |
+          odin run build.odin -file -define:DEBUG=true
+
+      - name: Upload build artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-${{ matrix.os }}
+          path: |
+            build/go*

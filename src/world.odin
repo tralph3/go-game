@@ -60,7 +60,6 @@ world_board_world_object_new :: proc () -> (board_world_object: ^BoardWorldObjec
     node_id := gltf.get_node_id(&nodes, "PlayArea") or_return
     board_size := gltf.get_node_extra(&nodes, node_id, "Size").(json.Integer) or_return
 
-
     box := rl.GetMeshBoundingBox(GLOBAL_STATE.assets.models[.BOARD].meshes[node_id])
 
     board_world_object.play_area = box.max.xz - box.min.xz
