@@ -175,6 +175,9 @@ player_camera_playing :: proc () {
         player.orbit_elevation -= delta.y
 
         player.orbit_elevation = clamp(player.orbit_elevation, 0.1, math.PI/2 - 0.1)
+    } else {
+        segment := f32(math.TAU / 4.0)
+        player.orbit_azimuth = math.round(player.orbit_azimuth / segment) * segment
     }
 
     radius := player.orbit_radius
