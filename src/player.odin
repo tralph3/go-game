@@ -33,6 +33,9 @@ Player :: struct {
     callbacks: [PlayerState]PlayerStateCallbacks,
     state: PlayerState,
     current_controller: ^BoardController,
+    orbit_radius: f32,
+    orbit_azimuth: f32,
+    orbit_elevation: f32,
 }
 
 player_init :: proc (start_pos: [2]f32, speed, height: f32) {
@@ -50,6 +53,8 @@ player_init :: proc (start_pos: [2]f32, speed, height: f32) {
         max_speed = speed,
         height = height,
         state = .ROAMING,
+        orbit_radius = 0.7,
+        orbit_elevation = 0.9,
     }
 
     player.callbacks[.ROAMING].move     = player_move_roaming
@@ -155,30 +160,38 @@ player_camera_roaming :: proc () {
 player_camera_playing :: proc () {
     player := &GLOBAL_STATE.player
     object := player.current_controller.object
-
     board_pos := object.transform.position
 
-    min_height := object.height + 0.35
-    max_height := object.height + 0.9
-
-    player.sitting_height += rl.GetMouseWheelMove() * 0.1
-    player.sitting_height = clamp(player.sitting_height, min_height, max_height)
-
-    board_top_y := board_pos.y + object.height
-
     target := board_pos
-    target.y = board_top_y
+    target.y = board_pos.y + object.height
 
-    position_offset := [3]f32{ 0, player.sitting_height, 1.25 - player.sitting_height }
+    // effectively zoom
+    player.orbit_radius -= rl.GetMouseWheelMove() * 0.1
+    player.orbit_radius = clamp(player.orbit_radius, 0.2, 2.0)
 
-    desired_pos := board_pos + position_offset
+    if rl.IsMouseButtonDown(.RIGHT) {
+        delta := rl.GetMouseDelta() * 0.002
+        player.orbit_azimuth += delta.x
+        player.orbit_elevation -= delta.y
 
-    smoothing := 1 - math.pow(0.01, rl.GetFrameTime())
+        player.orbit_elevation = clamp(player.orbit_elevation, 0.1, math.PI/2 - 0.1)
+    }
+
+    radius := player.orbit_radius
+    azimuth := player.orbit_azimuth
+    elevation := player.orbit_elevation
+
+    x := radius * math.cos(elevation) * math.sin(azimuth)
+    y := radius * math.sin(elevation)
+    z := radius * math.cos(elevation) * math.cos(azimuth)
+
+    desired_pos := target + [3]f32{x,y,z}
+
+    smoothing := 1 - math.pow(0.001, rl.GetFrameTime())
     player.camera.target = linalg.lerp(player.camera.target, target, smoothing)
     player.camera.position = linalg.lerp(player.camera.position, desired_pos, smoothing)
     player.camera.fovy = linalg.lerp(player.camera.fovy, 40.0, smoothing)
 }
-
 
 player_change_state_playing :: proc () {
     player := &GLOBAL_STATE.player
