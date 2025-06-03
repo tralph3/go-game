@@ -7,8 +7,8 @@ import "core:slice"
 import "core:mem"
 import "core:fmt"
 
-SGF_SAMPLE_SIMPLE :: ";FF[4]GM[1]SZ[19])"
-SGF_SAMPLE_WITH_CHILD :: ";FF[4]GM[1];B[aa];W[bb](;B[cc])(;B[dd]))"
+SGF_SAMPLE_SIMPLE :: "(;FF[4]GM[1]SZ[19])"
+SGF_SAMPLE_WITH_CHILD :: "(;FF[4]GM[1];B[aa];W[bb](;B[cc])(;B[dd]))"
 SGF_SAMPLE_INVALID_TOKEN :: ";FF[4]GM[1]SZ[19]@)"
 SGF_SAMPLE_UNEXPECTED_EOF :: ";FF[4]GM[1]SZ[19]"
 SGF_SAMPLE_COMPLEX_COMMENT :: `;C[Meijin NR: yeah, k4 is won\
@@ -24,7 +24,7 @@ to_byte_array :: proc (str: string) -> []byte {
 
 @(test)
 parse_simple_tree_test :: proc(t: ^testing.T) {
-    tree, _, err := tree_parse(to_byte_array(SGF_SAMPLE_SIMPLE))
+    tree, err := parse_from_str(SGF_SAMPLE_SIMPLE)
     defer tree_delete(tree)
 
     testing.expect_value(t, err, nil)
@@ -37,7 +37,7 @@ parse_simple_tree_test :: proc(t: ^testing.T) {
 
 @(test)
 parse_tree_with_children_test :: proc(t: ^testing.T) {
-    tree, _, err := tree_parse(to_byte_array(SGF_SAMPLE_WITH_CHILD))
+    tree, err := parse_from_str(SGF_SAMPLE_WITH_CHILD)
     defer tree_delete(tree)
 
     testing.expect_value(t, err, nil)
@@ -53,7 +53,7 @@ parse_tree_with_children_test :: proc(t: ^testing.T) {
 
 @(test)
 parse_complex_comment_test :: proc (t: ^testing.T) {
-    tree, _, err := tree_parse(to_byte_array(SGF_SAMPLE_COMPLEX_COMMENT))
+    tree, err := parse_from_str(SGF_SAMPLE_COMPLEX_COMMENT)
     defer tree_delete(tree)
 
     testing.expect_value(t, err, nil)

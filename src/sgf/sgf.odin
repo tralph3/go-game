@@ -2,6 +2,7 @@ package sgf
 
 import "core:os/os2"
 import "core:strings"
+import "core:slice"
 import "core:mem"
 import "core:fmt"
 
@@ -28,9 +29,15 @@ parse_from_file :: proc (path: string) -> (tree: Tree, err: Error) {
     defer delete(contents)
 
     contents_str := strings.string_from_ptr(raw_data(contents), len(contents))
-    start_idx := strings.index(contents_str, "(")
 
-    tree, _, err = tree_parse(contents[start_idx + 1:])
+    return parse_from_str(contents_str)
+}
+
+parse_from_str :: proc (contents: string) -> (tree: Tree, err: Error) {
+    start_idx := strings.index(contents, "(")
+    contents_slice := slice.from_ptr(raw_data(contents), len(contents))
+
+    tree, _, err = tree_parse(contents_slice[start_idx + 1:])
     if err != nil {
         tree_delete(tree)
     }
@@ -197,6 +204,55 @@ is_escape_character :: proc (contents: []byte, pos: int) -> bool {
     // if there is an odd amount of preceding escape chars, then the
     // one at the current pos is escaped, and doesn't count
     return escape_char_count % 2 == 0
+}
+
+tree_to_file :: proc (tree: ^Tree, path: string) -> (err: Error) {
+    str := tree_to_sgf(tree) or_return
+    defer delete(str)
+
+    os2.write_entire_file(path, slice.from_ptr(raw_data(str), len(str))) or_return
+
+    return
+}
+
+tree_to_sgf :: proc (tree: ^Tree) -> (str: string, err: mem.Allocator_Error) {
+    res: [dynamic]byte
+    defer if err != nil {
+        delete(res)
+    }
+
+    append(&res, '(') or_return
+
+    for node in tree.nodes {
+        append(&res, ';') or_return
+
+        for key, vals in node {
+            append(&res, ..slice.from_ptr(raw_data(key), len(key))) or_return
+
+            for val in vals {
+                append(&res, '[') or_return
+                append(&res, ..slice.from_ptr(raw_data(val), len(val))) or_return
+                append(&res, ']') or_return
+            }
+        }
+        append(&res, '\n') or_return
+    }
+
+    for &child in tree.children {
+        child_str := tree_to_sgf(&child) or_return
+        append(&res, ..slice.from_ptr(raw_data(child_str), len(child_str))) or_return
+        delete(child_str)
+    }
+
+    if res[len(res) - 1] == '\n' {
+        res[len(res) - 1] = ')'
+    } else {
+        append(&res, ')') or_return
+    }
+
+    append(&res, '\n') or_return
+
+    return strings.string_from_ptr(raw_data(res), len(res)), nil
 }
 
 node_delete :: proc (node: ^Node) {
