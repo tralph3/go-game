@@ -86,8 +86,6 @@ compile_socketio_cpp :: proc () -> (ok: bool) {
         if !configure_socketio_cpp() { return false }
     }
 
-    compiler := "g++"
-
     cmd: Command
 
     when ODIN_OS == .Windows {
@@ -114,6 +112,11 @@ compile_socketio_cpp :: proc () -> (ok: bool) {
     }
 
     when ODIN_OS == .Windows {
+        // TODO: I should probably define a flag that tells me I'm in
+        // the GitHub actions environment, and only add this include
+        // path there. On a regular Windows installation, I guess the
+        // user can add the OpenSSL include paths by environment
+        // variables? Not sure.
         append(&cmd, "/I..\\..\\vcpkg\\installed\\x64-windows-static\\include")
     }
 
