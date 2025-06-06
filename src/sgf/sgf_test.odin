@@ -156,3 +156,30 @@ node_parse_with_multiple_value_test :: proc (t: ^testing.T) {
         testing.expect_value(t, node["C"][0], "xx")
     }
 }
+
+@(test)
+to_sfg_file_and_back_test :: proc (t: ^testing.T) {
+    sgf_string := "(;A[aa](;B[bb])(;C[cc];D[dd]))"
+
+    tree, err := parse_from_str(sgf_string)
+    defer tree_delete(tree)
+    testing.expect_value(t, err, nil)
+
+    converted_str, err2 := tree_to_sgf(&tree)
+    defer delete(converted_str)
+    testing.expect_value(t, err2, nil)
+
+    tree2, err3 := parse_from_str(converted_str)
+    defer tree_delete(tree2)
+    testing.expect_value(t, err3, nil)
+
+    testing.expect_value(t, len(tree.nodes), len(tree2.nodes))
+    testing.expect_value(t, len(tree.children), len(tree2.children))
+
+    testing.expect_value(t, tree.nodes[0]["A"][0], tree2.nodes[0]["A"][0])
+
+    testing.expect_value(t, tree.children[0].nodes[0]["B"][0], tree2.children[0].nodes[0]["B"][0])
+
+    testing.expect_value(t, tree.children[1].nodes[0]["C"][0], tree2.children[1].nodes[0]["C"][0])
+    testing.expect_value(t, tree.children[1].nodes[1]["D"][0], tree2.children[1].nodes[1]["D"][0])
+}
