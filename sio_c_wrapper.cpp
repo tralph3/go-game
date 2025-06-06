@@ -11,7 +11,6 @@ using namespace sio;
 
 struct sio_client_c {
     client* cli;
-    // Callback storage
     sio_connect_callback open_cb = nullptr;
     void* open_ud = nullptr;
     sio_fail_callback fail_cb = nullptr;
@@ -28,7 +27,6 @@ struct sio_client_c {
 
 struct sio_socket_c {
     sio::socket::ptr sock;
-    // Event callback storage
     std::mutex cb_mutex;
     std::map<std::string, std::pair<sio_event_callback, void*>> event_callbacks;
 };
@@ -40,7 +38,6 @@ struct sio_message_c {
 
 extern "C" {
 
-// Message creation functions
 sio_message_handle sio_message_create_null() {
     sio_message_c* m = new sio_message_c;
     m->msg = null_message::create();
@@ -86,7 +83,6 @@ sio_message_handle sio_message_create_object() {
 void sio_message_destroy(sio_message_handle msg_) {
     sio_message_c* m = (sio_message_c*)msg_;
     if (m) {
-        // Recursively destroy children for arrays and objects
         if (m->msg->get_flag() == message::flag_array || m->msg->get_flag() == message::flag_object) {
             for (auto child : m->children) {
                 sio_message_destroy(child);
@@ -206,7 +202,6 @@ int sio_message_object_has(sio_message_handle obj_, const char* key) {
     return 0;
 }
 
-// Client management
 sio_client_handle sio_client_create() {
     sio_client_c* c = new sio_client_c;
     c->cli = new client();
