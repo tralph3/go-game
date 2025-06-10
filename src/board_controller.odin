@@ -6,30 +6,43 @@ import "core:strings"
 import "core:fmt"
 import "core:sync/chan"
 
-MoveCommand :: proc (controller: ^BoardController, x, y: u32)
+MoveCommand :: proc (controller: ^BoardController, x, y: u32) -> BoardSetError
 PassCommand :: proc (controller: ^BoardController)
 ResignCommand :: proc (controller: ^BoardController)
 
+CONTROLLER_NONE_COMMANDS :: BoardControllerCommands{
+    move = proc (_: ^BoardController, _, _: u32) -> BoardSetError {
+        return .NOT_EMPTY
+    },
+    pass = proc (_: ^BoardController) {},
+    resign = proc (_: ^BoardController) {},
+}
+
 CONTROLLER_LOCAL_COMMANDS :: BoardControllerCommands{
-    move = proc (controller: ^BoardController, x, y: u32) {
-        board_set(controller.board, x, y)
+    move = proc (controller: ^BoardController, x, y: u32) -> BoardSetError {
+        board_set(controller.board, x, y) or_return
 
         if controller.side == .WHITE {
             controller.side = .BLACK
         } else {
             controller.side = .WHITE
         }
+
+        return .NIL
     }
 }
 
 CONTROLLER_GTP_COMMANDS :: BoardControllerCommands{
-    move = proc (controller: ^BoardController, x, y: u32) {
-        board_set(controller.board, x, y)
+    move = proc (controller: ^BoardController, x, y: u32) -> BoardSetError {
+        board_set(controller.board, x, y) or_return
         gtp.client_make_move(controller.client.(^gtp.GTPClient), x, y, controller.side)
+
+        return .NIL
     }
 }
 
 ControllerClientType :: enum {
+    NONE,
     LOCAL,
     GTP,
     OGS,
@@ -77,6 +90,8 @@ board_controller_new :: proc (board_size: u32, board_transform: WorldTransform) 
 
 board_configure_client_type :: proc (controller: ^BoardController, type: ControllerClientType) {
     switch type {
+    case .NONE:
+        controller.commands = CONTROLLER_NONE_COMMANDS
     case .LOCAL:
         controller.commands = CONTROLLER_LOCAL_COMMANDS
     case .GTP:

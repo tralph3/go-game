@@ -120,10 +120,8 @@ player_interact_playing :: proc () {
 
     if !clicked || !hit || !player_is_current_turn() { return }
 
-    if err := board_set(player.current_controller.board, coord.x, coord.y); err != nil {
+    if err := player.current_controller.commands.move(player.current_controller, coord.x, coord.y); err != .NIL {
         return
-    } else {
-        player.current_controller.commands.move(player.current_controller, coord.x, coord.y)
     }
 
     sound_play_random(.STONE_PLACE_1, .STONE_PLACE_LAST)
