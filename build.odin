@@ -194,6 +194,10 @@ run_cmd :: proc (cmd: ^Command, silent: bool = false, work_dir: string = "") -> 
 }
 
 prepare :: proc () -> (ok: bool, err: NoExecutableError) {
+    if os2.is_file("build") {
+        os2.remove("build")
+    }
+
     os2.make_directory("build")
 
     if !executable_exists("git") {
