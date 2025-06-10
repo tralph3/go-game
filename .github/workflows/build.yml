@@ -23,7 +23,7 @@ jobs:
         uses: laytan/setup-odin@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          release: dev-2025-04
+          release: dev-2025-06
 
       - name: Install MSVC (Windows)
         if: runner.os == 'Windows'
