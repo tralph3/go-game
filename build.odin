@@ -194,22 +194,6 @@ run_cmd :: proc (cmd: ^Command, silent: bool = false, work_dir: string = "") -> 
 }
 
 prepare :: proc () -> (ok: bool, err: NoExecutableError) {
-    if os2.is_file("build") {
-        os2.remove("build")
-    }
-
-    if os2.is_file("build.bin") {
-        os2.remove("build.bin")
-    }
-
-    if os2.is_file("src.bin") {
-        os2.remove("src.bin")
-    }
-
-    if os2.is_file("build.exe") {
-        os2.remove("build.exe")
-    }
-
     os2.make_directory("build")
 
     if !executable_exists("git") {
