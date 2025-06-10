@@ -193,6 +193,16 @@ run_cmd :: proc (cmd: ^Command, silent: bool = false, work_dir: string = "") -> 
     return true
 }
 
+fix_kqueue_package_name :: proc () -> (ok: bool) {
+    cmd: Command
+
+    // macos bullshit
+    append(&cmd, "sed", "-i", "", "s/package kqueue/package _kqueue/", "src/http/nbio/_kqueue/kqueue.odin")
+
+    return run_cmd(&cmd)
+}
+
+
 prepare :: proc () -> (ok: bool, err: NoExecutableError) {
     if os2.is_file("build") {
         os2.remove("build")
@@ -286,6 +296,12 @@ main :: proc () {
     if !clone_submodules() {
         fmt.eprintln("ERROR: Failed cloning submodules")
         os2.exit(1)
+    }
+
+    when ODIN_OS == .Darwin {
+        if !fix_kqueue_package_name() {
+            os2.exit(1)
+        }
     }
 
     cmd := make_build_cmd("src", "go")
