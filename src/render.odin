@@ -74,7 +74,7 @@ render_world :: proc () {
                 draw_x := f32(x) * tile_offset.x - half_area.x + controller.object.transform.position.x + offsets.x
                 draw_y := f32(y) * tile_offset.y - half_area.y + controller.object.transform.position.z + offsets.y
 
-                rl.DrawModel(model, {draw_x, board_top, draw_y}, 1, { 255, 255, 255, opacity })
+                rl.DrawModel(model, {draw_x, board_top, draw_y}, 0.9, { 255, 255, 255, opacity })
             }
         }
     }

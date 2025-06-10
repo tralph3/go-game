@@ -81,7 +81,7 @@ world_generate_board_offsets :: proc (board_world_object: ^BoardWorldObject, boa
     tile_offset := board_world_object.play_area / f32(board_size - 1)
 
     for i in 0..<len(board_world_object.coord_offsets) {
-        board_world_object.coord_offsets[i].x = (rand.float32() - 0.5) * tile_offset.x * 0.08
-        board_world_object.coord_offsets[i].y = (rand.float32() - 0.5) * tile_offset.y * 0.08
+        board_world_object.coord_offsets[i].x = (rand.float32() - 0.5) * tile_offset.x * 0.12
+        board_world_object.coord_offsets[i].y = (rand.float32() - 0.5) * tile_offset.y * 0.12
     }
 }
