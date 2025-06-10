@@ -77,6 +77,10 @@ input_get_movement_vector :: proc () -> (movement_vector: [3]f32) {
         movement_vector.y += 1
     }
 
+    if movement_vector == { 0, 0, 0 } {
+        return
+    }
+
     return linalg.normalize(movement_vector)
 }
 
