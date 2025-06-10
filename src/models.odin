@@ -8,6 +8,7 @@ models_init :: proc () {
     log.info("Initializing models...")
 
     models_apply_shader()
+    models_gen_mipmaps()
 }
 
 models_apply_shader :: proc () {
@@ -20,14 +21,11 @@ models_apply_shader :: proc () {
     }
 }
 
-// model_load_with_shader_and_nodes :: proc (shader: ^rl.Shader, model_path: cstring) -> (rl.Model, gltf.ModelNodes, gltf.ReadError) {
-//     model := model_load_with_shader(shader, model_path)
-
-//     nodes, read_error := gltf.get_model_nodes(string(model_path))
-//     if read_error != nil {
-//         rl.UnloadModel(model)
-//         return model, nodes, read_error
-//     }
-
-//     return model, nodes, nil
-// }
+models_gen_mipmaps :: proc () {
+    for model in GLOBAL_STATE.assets.models {
+        for i in 0..<model.materialCount {
+            rl.GenTextureMipmaps(&model.materials[i].maps[0].texture)
+            rl.SetTextureFilter(model.materials[i].maps[0].texture, .TRILINEAR)
+        }
+    }
+}
