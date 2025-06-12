@@ -87,3 +87,7 @@ input_get_movement_vector :: proc () -> (movement_vector: [3]f32) {
 input_should_toggle_sit :: proc () -> bool {
     return rl.IsKeyPressed(.M)
 }
+
+input_should_open_menu :: proc () -> bool {
+    return rl.IsKeyPressed(.ESCAPE)
+}

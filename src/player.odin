@@ -52,7 +52,7 @@ player_init :: proc (start_pos: [2]f32, speed, height: f32) {
         speed = 0,
         max_speed = speed,
         height = height,
-        state = .ROAMING,
+        state = .MENU,
         orbit_radius = 0.7,
         orbit_elevation = 0.9,
     }
@@ -128,6 +128,11 @@ player_interact_playing :: proc () {
 }
 
 player_interact_roaming :: proc () {
+    if input_should_open_menu() {
+        player_change_state_menu()
+        return
+    }
+
     controller := input_get_clicked_controller()
 
     if controller == nil {
@@ -192,6 +197,15 @@ player_camera_playing :: proc () {
     player.camera.target = linalg.lerp(player.camera.target, target, smoothing)
     player.camera.position = linalg.lerp(player.camera.position, desired_pos, smoothing)
     player.camera.fovy = linalg.lerp(player.camera.fovy, 40.0, smoothing)
+}
+
+player_change_state_menu :: proc () {
+    player := &GLOBAL_STATE.player
+
+    rl.EnableCursor()
+
+    player.state = .MENU
+    player.speed = 0
 }
 
 player_change_state_playing :: proc () {

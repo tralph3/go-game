@@ -1,5 +1,6 @@
 package main
 
+import cl "clay"
 import "base:runtime"
 import "gtp"
 
@@ -10,6 +11,10 @@ GLOBAL_STATE := struct {
     room_object: RoomWorldObject,
 
     board_controllers: [dynamic]^BoardController,
+
+    ui_arena: cl.Arena,
+
+    should_exit: bool,
 
     ctx: runtime.Context,
 } {}

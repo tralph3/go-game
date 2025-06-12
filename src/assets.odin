@@ -1,12 +1,14 @@
 package main
 
 import rl "vendor:raylib"
+import "core:c"
 import "core:log"
 
 Assets :: struct {
     models: [ModelID]rl.Model,
     sounds: [SoundID]rl.Sound,
     shaders: [ShaderID]rl.Shader,
+    fonts: [FontID]rl.Font,
 }
 
 ModelID :: enum {
@@ -27,6 +29,10 @@ ShaderID :: enum {
     LIGHTING,
 }
 
+FontID :: enum {
+    TITLE,
+}
+
 ModelPaths :: [ModelID]cstring {
         .ROOM = "./assets/models/room.glb",
         .BOARD = "./assets/models/board.glb",
@@ -45,12 +51,17 @@ ShaderPaths :: [ShaderID][2]cstring {
         .LIGHTING = { "./assets/shaders/lighting.vert", "./assets/shaders/lighting.frag" },
 }
 
+FontPaths :: [FontID]struct { path: cstring, size: c.int } {
+        .TITLE = { "./assets/fonts/PierceRoman.otf", 32 },
+}
+
 assets_load_all :: proc () -> (ok: bool) {
     log.info("Loading assets...")
 
     assets_load_models() or_return
     assets_load_sounds() or_return
     assets_load_shaders() or_return
+    assets_load_fonts() or_return
 
     return true
 }
@@ -61,6 +72,7 @@ assets_unload_all :: proc () {
     assets_unload_models()
     assets_unload_sounds()
     assets_unload_shaders()
+    assets_unload_fonts()
 }
 
 @(private="file")
@@ -110,6 +122,21 @@ assets_load_shaders :: proc () -> (ok: bool) {
 }
 
 @(private="file")
+assets_load_fonts :: proc () -> (ok: bool) {
+    log.info("Loading fonts...")
+
+    for load_info, font_id in FontPaths {
+        GLOBAL_STATE.assets.fonts[font_id] = rl.LoadFontEx(load_info.path, load_info.size, nil, 0)
+        if !rl.IsFontValid(GLOBAL_STATE.assets.fonts[font_id]) {
+            log.errorf("Failed loading font: '%s'", load_info.path)
+            return false
+        }
+    }
+
+    return true
+}
+
+@(private="file")
 assets_unload_models :: proc () {
     for model in GLOBAL_STATE.assets.models {
         rl.UnloadModel(model)
@@ -127,5 +154,12 @@ assets_unload_sounds :: proc () {
 assets_unload_shaders :: proc () {
     for shader in GLOBAL_STATE.assets.shaders {
         rl.UnloadShader(shader)
+    }
+}
+
+@(private="file")
+assets_unload_fonts :: proc () {
+    for font in GLOBAL_STATE.assets.fonts {
+        rl.UnloadFont(font)
     }
 }

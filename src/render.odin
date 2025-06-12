@@ -12,9 +12,11 @@ render_init_renderer :: proc () {
 
     rl.InitWindow(800, 600, "Go")
 
+    rl.SetExitKey(.KEY_NULL)
+
     rl.SetTargetFPS(60)
 
-    rl.DisableCursor()
+    rl.EnableCursor()
 
     rl.InitAudioDevice()
 }
@@ -90,6 +92,12 @@ render_world :: proc () {
     }
 
     rl.EndMode3D()
+
+    if GLOBAL_STATE.player.state == .MENU {
+        ui_layout := ui_create_main_menu_layout()
+
+        clay_raylib_render(&ui_layout)
+    }
 
     if GLOBAL_STATE.player.state == .ROAMING {
         rl.DrawCircle(rl.GetRenderWidth() / 2, rl.GetRenderHeight() / 2, 1, rl.WHITE)

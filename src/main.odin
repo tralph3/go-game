@@ -15,6 +15,7 @@ import "core:strings"
 
 import "gtp"
 import "gltf"
+import cl "clay"
 
 main :: proc () {
     context.logger = log.create_console_logger(opt={ .Level, .Terminal_Color })
@@ -52,18 +53,24 @@ main :: proc () {
     shaders_init()
     models_init()
 
+    ui_init()
+    defer ui_deinit()
+
     if !world_init() {
         log.error("Failed initializing world objects")
         return
     }
     defer board_controller_free_all()
 
-    board_configure_client_type(GLOBAL_STATE.board_controllers[0], .GTP)
+    board_configure_client_type(GLOBAL_STATE.board_controllers[0], .NONE)
 
     player_init({ -1.0, 0.0 }, 1.9, 1)
 
-    for !rl.WindowShouldClose() {
+    for !GLOBAL_STATE.should_exit && !rl.WindowShouldClose() {
         board_controllers_make_all_pending_moves()
+        if GLOBAL_STATE.player.state == .MENU {
+            ui_update()
+        }
         shaders_update()
         player_update()
         render_world()
