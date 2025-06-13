@@ -1,3 +1,6 @@
 [submodule "src/http"]
 	path = src/http
 	url = https://github.com/laytan/odin-http
+[submodule "assets"]
+	path = assets
+	url = https://github.com/tralph3/go-game-assets
