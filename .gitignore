@@ -1,2 +1,5 @@
 build/
 assets/
+*.a
+*.o
+*.lib

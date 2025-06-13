@@ -138,8 +138,7 @@ compile_socketio_cpp :: proc () -> (ok: bool) {
 
     clear(&cmd)
 
-    append(&cmd, "ar")
-    append(&cmd, "rcs")
+    append(&cmd, "ar", "rcs")
 
     append(&cmd, BUILD_PATH + "/" + SOCKETIO_LIB_NAME)
 
@@ -163,6 +162,34 @@ compile_socketio_cpp :: proc () -> (ok: bool) {
     }
 
     return run_cmd(&cmd)
+}
+
+compile_clay :: proc () -> (ok: bool) {
+    cmd: Command
+
+    when ODIN_OS == .Windows {
+        append(&cmd, "cl", "/c", "/EHsc", "/Tc")
+    } else {
+        append(&cmd, "gcc", "-x", "c", "-c")
+    }
+
+    append(&cmd, SWITCH_CHAR + "DCLAY_IMPLEMENTATION")
+    append(&cmd, "clay.h")
+
+    run_cmd(&cmd, work_dir="src/clay") or_return
+    clear(&cmd)
+
+    when ODIN_OS == .Windows {
+        append(&cmd, "lib")
+        append(&cmd, "/out:clay.lib")
+        append(&cmd, "clay.obj")
+    } else {
+        append(&cmd, "ar", "rcs")
+        append(&cmd, "clay.a")
+        append(&cmd, "clay.o")
+    }
+
+    return run_cmd(&cmd, work_dir="src/clay")
 }
 
 @(require_results)
@@ -245,7 +272,7 @@ make_build_cmd :: proc (pkg, out: string) -> Command {
     append(&cmd, "build")
     append(&cmd, pkg)
 
-    when DEBUG {
+    when ODIN_DEBUG {
         append(&cmd, "-debug")
 
         when ODIN_OS == .Linux {
@@ -293,6 +320,19 @@ main :: proc () {
         }
     }
 
+    when ODIN_OS == .Windows {
+        clay_lib_name := "clay.lib"
+    } else {
+        clay_lib_name := "clay.a"
+    }
+
+    if !os2.is_file(fmt.tprintf("src/clay/%s", clay_lib_name)) {
+        if !compile_clay() {
+            fmt.eprintln("ERROR: Error compiling clay. Aborting")
+            os2.exit(1)
+        }
+    }
+
     if !clone_submodules() {
         fmt.eprintln("ERROR: Failed cloning submodules")
         os2.exit(1)
@@ -307,7 +347,7 @@ main :: proc () {
     cmd := make_build_cmd("src", "go")
     append(&cmd, "-error-pos-style:unix")
 
-    when !DEBUG {
+    when !ODIN_DEBUG {
         strict_style_flags(&cmd)
         optimization_flags(&cmd)
     }

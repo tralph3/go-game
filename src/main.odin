@@ -62,8 +62,6 @@ main :: proc () {
     }
     defer board_controller_free_all()
 
-    board_configure_client_type(GLOBAL_STATE.board_controllers[0], .NONE)
-
     player_init({ -1.0, 0.0 }, 1.9, 1)
 
     for !GLOBAL_STATE.should_exit && !rl.WindowShouldClose() {
