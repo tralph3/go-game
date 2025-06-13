@@ -2,7 +2,6 @@ package gltf
 
 import "core:os/os2"
 import "core:io"
-import "core:fmt"
 import "core:mem"
 import "core:slice"
 import "core:encoding/json"
@@ -34,6 +33,7 @@ HeaderReadError :: union {
     UnknownMagicNumberError,
     UnknownFileVersionError,
     EmptyFileError,
+    io.Error,
 }
 
 UnknownMagicNumberError :: struct{}
@@ -46,7 +46,7 @@ check_file_header :: proc (file: ^os2.File) -> HeaderReadError {
     header_buf := make([]byte, GLTF_HEADER_SIZE)
     defer delete(header_buf)
 
-    _, read_err := io.read_at_least(file.stream, header_buf, GLTF_HEADER_SIZE)
+    io.read_at_least(file.stream, header_buf, GLTF_HEADER_SIZE) or_return
 
     magic: u32le
     mem.copy_non_overlapping(&magic, slice.as_ptr(header_buf), 4)

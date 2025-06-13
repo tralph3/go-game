@@ -1,7 +1,6 @@
 package main
 
 import rl "vendor:raylib"
-import "gltf"
 import "core:log"
 
 models_init :: proc () {

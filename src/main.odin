@@ -1,21 +1,7 @@
 package main
 
 import rl "vendor:raylib"
-import "vendor:raylib/rlgl"
-import "core:mem"
-import "core:fmt"
-import "core:math"
-import "core:math/rand"
-import "core:c"
-import "core:thread"
-import "core:time"
-import "base:runtime"
 import "core:log"
-import "core:strings"
-
-import "gtp"
-import "gltf"
-import cl "clay"
 
 main :: proc () {
     context.logger = log.create_console_logger(opt={ .Level, .Terminal_Color })

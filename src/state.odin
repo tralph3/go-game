@@ -2,7 +2,6 @@ package main
 
 import cl "clay"
 import "base:runtime"
-import "gtp"
 
 GLOBAL_STATE := struct {
     player: Player,

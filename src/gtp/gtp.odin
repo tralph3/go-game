@@ -1,14 +1,12 @@
 package gtp
 
 import "core:os/os2"
-import "core:io"
 import "core:slice"
 import "core:fmt"
 import "core:strings"
 import "core:sync/chan"
 import "core:strconv"
 import "core:thread"
-import "core:time"
 
 EVENT_CHANNEL_BUFFER_SIZE :: 8
 
@@ -46,8 +44,7 @@ client_read_events :: proc (client: ^GTPClient) {
 
         when ODIN_DEBUG {
             if strings.starts_with(command, COMMAND_GENMOVE) ||
-                strings.starts_with(command, COMMAND_PLAY)
-            {
+                strings.starts_with(command, COMMAND_PLAY) {
                 client_send_command(client, COMMAND_SHOWBOARD)
             }
         }

@@ -3,7 +3,6 @@ package main
 import sio "socketio"
 import "core:strings"
 import "core:fmt"
-import "base:runtime"
 import "http"
 import "http/client"
 import "core:encoding/json"

@@ -184,7 +184,7 @@ draw_rect :: proc(x, y, w, h: f32, color: cl.Color) {
         i32(math.round(y)),
         i32(math.round(w)),
         i32(math.round(h)),
-        clay_color_to_rl_color(color)
+        clay_color_to_rl_color(color),
     )
 }
 

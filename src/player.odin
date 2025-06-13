@@ -4,8 +4,6 @@ import rl "vendor:raylib"
 import "core:math"
 import "core:math/linalg"
 import "core:log"
-import "core:fmt"
-import "gtp"
 
 PlayerMoveCallback :: proc ()
 PlayerInteractCallback :: proc ()

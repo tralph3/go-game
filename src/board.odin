@@ -3,8 +3,6 @@ package main
 import "core:mem"
 import "core:fmt"
 import "core:slice"
-import "core:strings"
-import "core:bytes"
 import "sgf"
 
 BoardSetError :: enum u8 {

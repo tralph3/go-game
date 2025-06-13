@@ -1,9 +1,8 @@
 package main
 
-import "core:mem"
 import "gtp"
 import "core:strings"
-import "core:fmt"
+import "core:log"
 import "core:sync/chan"
 
 MoveCommand :: proc (controller: ^BoardController, x, y: u32) -> BoardSetError
@@ -36,7 +35,7 @@ CONTROLLER_LOCAL_COMMANDS :: BoardControllerCommands{
         } else {
             controller.side = .WHITE
         }
-    }
+    },
 }
 
 CONTROLLER_GTP_COMMANDS :: BoardControllerCommands{
@@ -45,7 +44,7 @@ CONTROLLER_GTP_COMMANDS :: BoardControllerCommands{
         gtp.client_make_move(controller.client.(^gtp.GTPClient), x, y, controller.side)
 
         return .NIL
-    }
+    },
 }
 
 ControllerClientType :: enum {
@@ -155,6 +154,9 @@ board_controllers_make_all_pending_moves :: proc () {
 
 board_controller_change_type :: proc (controller: ^BoardController, new_type: ControllerClientType) {
     new_controller, ok := board_controller_new(controller.board.size, controller.object.transform, new_type)
+    if !ok {
+        log.error("ERROR: Failed creating new controller")
+    }
 
     unordered_remove(&GLOBAL_STATE.board_controllers, 0)
     append(&GLOBAL_STATE.board_controllers, new_controller)

@@ -2,8 +2,6 @@ package main
 
 import "core:slice"
 import "core:log"
-import "core:fmt"
-import "core:os/os2"
 import cl "clay"
 import rl "vendor:raylib"
 
@@ -25,7 +23,7 @@ ui_init :: proc () {
     cl.Initialize(
         GLOBAL_STATE.ui_arena,
         { f32(rl.GetRenderWidth()), f32(rl.GetRenderHeight()) },
-        { handler = ui_error_handler }
+        { handler = ui_error_handler },
     )
 
     cl.SetDebugModeEnabled(false)

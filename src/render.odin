@@ -1,7 +1,6 @@
 package main
 
 import rl "vendor:raylib"
-import "core:math/linalg"
 import "core:log"
 
 render_init_renderer :: proc () {
@@ -54,7 +53,6 @@ render_world :: proc () {
         half_area := controller.object.play_area / 2
         tile_offset := controller.object.play_area / f32(controller.board.size - 1)
         board_top := controller.object.transform.position.y + controller.object.height
-        player := &GLOBAL_STATE.player
 
         for y in 0..<controller.board.size {
             for x in 0..<controller.board.size {

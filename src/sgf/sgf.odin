@@ -4,7 +4,6 @@ import "core:os/os2"
 import "core:strings"
 import "core:slice"
 import "core:mem"
-import "core:fmt"
 
 Node :: map[string][dynamic]string
 
@@ -45,7 +44,7 @@ parse_from_str :: proc (contents: string) -> (tree: Tree, err: Error) {
     return
 }
 
-tree_parse :: proc (contents: []byte) -> (tree: Tree, end_index: int, err: Error) {
+tree_parse :: proc (contents: []byte) -> (tree: Tree, end_idx: int, err: Error) {
     index := 0
 
     for {
@@ -79,7 +78,7 @@ tree_parse :: proc (contents: []byte) -> (tree: Tree, end_index: int, err: Error
     return tree, index - 1, nil
 }
 
-node_parse :: proc (contents: []byte) -> (node: Node, end_index: int, err: Error) {
+node_parse :: proc (contents: []byte) -> (node: Node, end_idx: int, err: Error) {
     index := 0
 
     // spec: identifiers can't be greater than two characters

@@ -2,7 +2,6 @@ package main
 
 import rl "vendor:raylib"
 import "core:log"
-import "core:fmt"
 import "gltf"
 import "core:encoding/json"
 import "core:math/rand"
