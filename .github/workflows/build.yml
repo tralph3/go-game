@@ -45,7 +45,7 @@ jobs:
 
       - name: Build debug
         run: |
-          odin run build.odin -file -define:DEBUG=true
+          odin run build.odin -file -debug
 
       - name: Upload build artifact
         if: success()
