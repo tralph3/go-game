@@ -47,11 +47,17 @@ jobs:
         run: |
           odin run build.odin -file -debug
 
+      - name: Move files for uploading
+        shell: bash
+        run: |
+          mkdir dist
+          mv assets dist/
+          mv build/go* dist/
+
       - name: Upload build artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: go-${{ matrix.os }}
           path: |
-            assets/
-            build/go*
+            dist/*
