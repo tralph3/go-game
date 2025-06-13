@@ -2,6 +2,7 @@ package main
 
 import rl "vendor:raylib"
 import "core:log"
+import "core:mem"
 
 main :: proc () {
     context.logger = log.create_console_logger(opt={ .Level, .Terminal_Color })
