@@ -173,8 +173,8 @@ compile_clay :: proc () -> (ok: bool) {
         append(&cmd, "gcc", "-x", "c", "-c")
     }
 
-    append(&cmd, SWITCH_CHAR + "DCLAY_IMPLEMENTATION")
     append(&cmd, "clay.h")
+    append(&cmd, SWITCH_CHAR + "DCLAY_IMPLEMENTATION")
 
     run_cmd(&cmd, work_dir="src/clay") or_return
     clear(&cmd)
