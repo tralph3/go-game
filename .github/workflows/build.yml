@@ -53,4 +53,5 @@ jobs:
         with:
           name: go-${{ matrix.os }}
           path: |
+            assets/
             build/go*
