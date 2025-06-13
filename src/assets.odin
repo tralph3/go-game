@@ -38,7 +38,6 @@ ModelPaths :: [ModelID]cstring {
         .BOARD = "./assets/models/board.glb",
         .WHITE_STONE = "./assets/models/white_stone.glb",
         .BLACK_STONE = "./assets/models/black_stone.glb",
-        .CLIPBOARD = "./assets/models/clipboard.glb",
 }
 
 SoundPaths :: [SoundID]cstring {
