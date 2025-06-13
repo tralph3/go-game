@@ -57,6 +57,8 @@ player_init :: proc (start_pos: [2]f32, speed, height: f32) {
         orbit_elevation = 0.9,
     }
 
+    player.current_controller = GLOBAL_STATE.board_controllers[0]
+
     player.callbacks[.ROAMING].move     = player_move_roaming
     player.callbacks[.ROAMING].interact = player_interact_roaming
     player.callbacks[.ROAMING].camera   = player_camera_roaming
@@ -67,10 +69,7 @@ player_init :: proc (start_pos: [2]f32, speed, height: f32) {
 
     player.callbacks[.MENU].move     = player_move_null
     player.callbacks[.MENU].interact = player_interact_null
-    player.callbacks[.MENU].camera   = player_interact_null
-
-    assert(len(GLOBAL_STATE.board_controllers) >= 1)
-    player.current_controller = GLOBAL_STATE.board_controllers[0]
+    player.callbacks[.MENU].camera   = player_camera_menu
 
     GLOBAL_STATE.player = player
 }
@@ -191,7 +190,32 @@ player_camera_playing :: proc () {
     y := radius * math.sin(elevation)
     z := radius * math.cos(elevation) * math.cos(azimuth)
 
-    desired_pos := target + [3]f32{x,y,z}
+    desired_pos := target + [3]f32{ x, y, z }
+
+    smoothing := 1 - math.pow(0.001, rl.GetFrameTime())
+    player.camera.target = linalg.lerp(player.camera.target, target, smoothing)
+    player.camera.position = linalg.lerp(player.camera.position, desired_pos, smoothing)
+    player.camera.fovy = linalg.lerp(player.camera.fovy, 40.0, smoothing)
+}
+
+player_camera_menu :: proc () {
+    player := &GLOBAL_STATE.player
+
+    target := [3]f32{ 0, 0.2, 0 }
+
+    player.orbit_radius = 2.4
+    player.orbit_elevation = 0.5
+    player.orbit_azimuth += 0.3 * rl.GetFrameTime()
+
+    radius := player.orbit_radius
+    azimuth := player.orbit_azimuth
+    elevation := player.orbit_elevation
+
+    x := radius * math.cos(elevation) * math.sin(azimuth)
+    y := radius * math.sin(elevation)
+    z := radius * math.cos(elevation) * math.cos(azimuth)
+
+    desired_pos := target + [3]f32{ x, y, z }
 
     smoothing := 1 - math.pow(0.001, rl.GetFrameTime())
     player.camera.target = linalg.lerp(player.camera.target, target, smoothing)
@@ -213,13 +237,19 @@ player_change_state_playing :: proc () {
 
     rl.EnableCursor()
 
+    player.orbit_radius = 0.7
+    player.orbit_elevation = 0.7
+
     player.state = .PLAYING
     player.speed = 0
 }
 
 player_change_state_roaming :: proc () {
     player := &GLOBAL_STATE.player
-    player.current_controller.object.hovered_coord = { -1, -1 }
+
+    if player.state == .PLAYING {
+        player.current_controller.object.hovered_coord = { -1, -1 }
+    }
 
     rl.DisableCursor()
 

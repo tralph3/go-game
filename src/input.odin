@@ -10,7 +10,7 @@ input_get_clicked_controller :: proc () -> ^BoardController {
         return nil
     }
 
-    click: [2]f32 = { f32(rl.GetRenderWidth()) / 2.0, f32(rl.GetRenderHeight()) / 2.0 }
+    click: [2]f32 = { f32(rl.GetScreenWidth()) / 2.0, f32(rl.GetScreenHeight()) / 2.0 }
     ray := rl.GetScreenToWorldRay(click, GLOBAL_STATE.player.camera)
 
     for controller in GLOBAL_STATE.board_controllers {
@@ -57,7 +57,7 @@ input_get_board_coord :: proc (controller: ^BoardController) -> (coord: [2]u32, 
     rx := u32(math.round(x))
     ry := u32(math.round(y))
 
-    return {rx, ry}, true, click
+    return { rx, ry }, true, click
 }
 
 input_get_movement_vector :: proc () -> (movement_vector: [3]f32) {

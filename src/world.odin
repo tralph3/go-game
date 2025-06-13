@@ -37,9 +37,11 @@ world_init :: proc () -> (ok: bool) {
         model = &GLOBAL_STATE.assets.models[ModelID.ROOM],
     }
 
-    controller := board_controller_new(19, {}) or_return
+    controller := board_controller_new(19, {}, .LOCAL) or_return
 
-    append(&GLOBAL_STATE.board_controllers, controller)
+    if _, err := append(&GLOBAL_STATE.board_controllers, controller); err != nil {
+        return
+    }
 
     ok = true
     return

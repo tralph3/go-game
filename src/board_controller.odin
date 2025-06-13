@@ -29,6 +29,13 @@ CONTROLLER_LOCAL_COMMANDS :: BoardControllerCommands{
         }
 
         return .NIL
+    },
+    pass = proc (controller: ^BoardController) {
+        if controller.side == .WHITE {
+            controller.side = .BLACK
+        } else {
+            controller.side = .WHITE
+        }
     }
 }
 
@@ -66,7 +73,7 @@ BoardController :: struct {
     },
 }
 
-board_controller_new :: proc (board_size: u32, board_transform: WorldTransform) -> (board_controller: ^BoardController, ok: bool) {
+board_controller_new :: proc (board_size: u32, board_transform: WorldTransform, type: ControllerClientType) -> (board_controller: ^BoardController, ok: bool) {
     board_controller = new(BoardController)
 
     if board, err := board_new(board_size); err != nil {
@@ -81,8 +88,9 @@ board_controller_new :: proc (board_size: u32, board_transform: WorldTransform) 
     ch, err := chan.create(type_of(board_controller.move_queue), 8, context.allocator)
     if err != nil { return }
     board_controller.move_queue = ch
-
     board_controller.side = .BLACK
+
+    board_configure_client_type(board_controller, type)
 
     ok = true
     return
@@ -143,4 +151,12 @@ board_controllers_make_all_pending_moves :: proc () {
         board_set(controller.board, move.x, move.y)
         sound_play_random(.STONE_PLACE_1, .STONE_PLACE_LAST)
     }
+}
+
+board_controller_change_type :: proc (controller: ^BoardController, new_type: ControllerClientType) {
+    new_controller, ok := board_controller_new(controller.board.size, controller.object.transform, new_type)
+
+    unordered_remove(&GLOBAL_STATE.board_controllers, 0)
+    append(&GLOBAL_STATE.board_controllers, new_controller)
+    board_controller_free(controller)
 }

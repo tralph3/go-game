@@ -9,7 +9,7 @@ shaders_init :: proc () {
     shader := &GLOBAL_STATE.assets.shaders[.LIGHTING]
 
     rl.SetShaderValue(
-        shader^, rl.GetShaderLocation(shader^, "ambient"), &[4]f32{ 0.0, 0.0, 0.0, 1.0 }, .VEC4)
+        shader^, rl.GetShaderLocation(shader^, "ambient"), &[4]f32{ 0.6, 0.6, 0.6, 1.0 }, .VEC4)
 
     shader.locs[rl.ShaderLocationIndex.MAP_NORMAL] = rl.GetShaderLocation(shader^, "normalMap")
     shader.locs[rl.ShaderLocationIndex.MAP_ALBEDO] = rl.GetShaderLocation(shader^, "texture0")

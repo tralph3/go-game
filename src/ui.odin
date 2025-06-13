@@ -100,13 +100,11 @@ ui_create_main_menu_layout :: proc () -> cl.ClayArray(cl.RenderCommand) {
             },
         }) {
             ui_button("Play Local", proc () {
-                board_reset(GLOBAL_STATE.board_controllers[0].board)
-                board_configure_client_type(GLOBAL_STATE.board_controllers[0], .LOCAL)
+                board_controller_change_type(GLOBAL_STATE.board_controllers[0], .LOCAL)
                 player_change_state_roaming()
             })
             ui_button("Play AI", proc () {
-                board_reset(GLOBAL_STATE.board_controllers[0].board)
-                board_configure_client_type(GLOBAL_STATE.board_controllers[0], .GTP)
+                board_controller_change_type(GLOBAL_STATE.board_controllers[0], .GTP)
                 player_change_state_roaming()
             })
             ui_button("Exit", proc () {
