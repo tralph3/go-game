@@ -16,7 +16,6 @@ ModelID :: enum {
     BOARD,
     WHITE_STONE,
     BLACK_STONE,
-    CLIPBOARD,
 }
 
 SoundID :: enum {
