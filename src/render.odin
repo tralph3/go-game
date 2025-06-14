@@ -7,7 +7,7 @@ render_init_renderer :: proc () {
     log.info("Starting renderer...")
 
     rl.SetTraceLogLevel(.NONE)
-    rl.SetConfigFlags({ .MSAA_4X_HINT })
+    rl.SetConfigFlags({ .MSAA_4X_HINT, .WINDOW_RESIZABLE })
 
     rl.InitWindow(800, 600, "Go")
 
