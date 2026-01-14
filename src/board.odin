@@ -24,7 +24,7 @@ BoardState :: enum u8 {
 StoneGroup :: struct {
     liberties: u32,
     stone_type: BoardState,
-    stones: [][2]u32,
+    stones: [dynamic][2]u32,
 }
 
 Board :: struct {
@@ -359,7 +359,7 @@ board_get_group_at_point :: proc (board: ^Board, x, y: u32) -> StoneGroup {
     return {
         liberties = liberty_count,
         stone_type = stone,
-        stones = to_visit[:],
+        stones = to_visit,
     }
 }
 

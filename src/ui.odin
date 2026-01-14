@@ -5,6 +5,9 @@ import "core:log"
 import cl "clay"
 import rl "vendor:raylib"
 
+MAIN_BACKGROUND_COLOR :: [4]f32{ 45, 49, 66, 255 }
+ACCENT_COLOR :: [4]f32{176, 215, 255, 255}
+
 ui_error_handler :: proc "c" (error_data: cl.ErrorData) {
     context = GLOBAL_STATE.ctx
 
@@ -54,7 +57,7 @@ ui_button :: proc (text: string, callback: proc ()) {
                 y = .Center,
             },
         },
-        backgroundColor = cl.Hovered() ? {176, 215, 255, 255} : {},
+        backgroundColor = cl.Hovered() ? ACCENT_COLOR : {},
     }) {
         cl.OnHover(proc "c" (id: cl.ElementId, pointer: cl.PointerData, user_data: rawptr) {
             context = GLOBAL_STATE.ctx
@@ -64,7 +67,7 @@ ui_button :: proc (text: string, callback: proc ()) {
             }
         }, rawptr(callback))
         cl.TextDynamic(text, &{
-            textColor = {255,255,255,255},
+            textColor = { 255, 255, 255, 255 },
             fontSize = 32,
         })
     }
@@ -91,9 +94,9 @@ ui_create_main_menu_layout :: proc () -> cl.ClayArray(cl.RenderCommand) {
                 layoutDirection = .TopToBottom,
                 padding = { 0, 0, 0, 28 },
             },
-            backgroundColor = { 45, 49, 66, 255 },
+            backgroundColor = MAIN_BACKGROUND_COLOR,
             border = {
-                color = {176, 215, 255, 255},
+                color = ACCENT_COLOR,
                 width = { 3, 0, 0, 0, 0 },
             },
         }) {

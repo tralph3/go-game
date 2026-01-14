@@ -42,13 +42,6 @@ client_read_events :: proc (client: ^GTPClient) {
             break
         }
 
-        when ODIN_DEBUG {
-            if strings.starts_with(command, COMMAND_GENMOVE) ||
-                strings.starts_with(command, COMMAND_PLAY) {
-                client_send_command(client, COMMAND_SHOWBOARD)
-            }
-        }
-
         os2.write(client.stdin_w, slice.bytes_from_ptr(raw_data(command), len(command)))
 
         buf: [2048]byte
@@ -189,7 +182,8 @@ gtp_coord_to_number :: proc (coord: string, board_size: u32) -> [2]u32 {
 
     x -= 'A'
 
-    y := board_size - u32(strconv.atoi(coord[1:]))
+    n, _ := strconv.parse_int(coord[1:])
+    y := board_size - u32(n)
 
     return { u32(x), y }
 }

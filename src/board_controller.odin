@@ -3,6 +3,7 @@ package main
 import "gtp"
 import "core:strings"
 import "core:log"
+import "core:os/os2"
 import "core:sync/chan"
 
 MoveCommand :: proc (controller: ^BoardController, x, y: u32) -> BoardSetError
@@ -89,13 +90,16 @@ board_controller_new :: proc (board_size: u32, board_transform: WorldTransform, 
     board_controller.move_queue = ch
     board_controller.side = .BLACK
 
-    board_configure_client_type(board_controller, type)
+    if err := board_configure_client_type(board_controller, type); err != nil {
+        board_controller_free(board_controller)
+        return
+    }
 
     ok = true
     return
 }
 
-board_configure_client_type :: proc (controller: ^BoardController, type: ControllerClientType) {
+board_configure_client_type :: proc (controller: ^BoardController, type: ControllerClientType) -> os2.Error {
     switch type {
     case .NONE:
         controller.commands = CONTROLLER_NONE_COMMANDS
@@ -103,7 +107,12 @@ board_configure_client_type :: proc (controller: ^BoardController, type: Control
         controller.commands = CONTROLLER_LOCAL_COMMANDS
     case .GTP:
         controller.commands = CONTROLLER_GTP_COMMANDS
-        client, _ := gtp.client_new(PachiDefault)
+        client, err := gtp.client_new(PachiDefault)
+        if err != nil {
+            log.errorf("Failed starting AI process: %s", err)
+            return err
+        }
+
         client.user_data = controller
         controller.client = client
         gtp.client_configure(client, controller.board.size, controller.board.komi, proc (command, response: string, user_data: rawptr) {
@@ -119,6 +128,8 @@ board_configure_client_type :: proc (controller: ^BoardController, type: Control
         })
     case .OGS:
     }
+
+    return nil
 }
 
 board_controller_free_all :: proc () {
@@ -133,12 +144,12 @@ board_controller_free :: proc (controller: ^BoardController) {
 
     chan.destroy(controller.move_queue)
 
-    switch c in controller.client {
-    case ^gtp.GTPClient:
-        gtp.client_delete(controller.client.(^gtp.GTPClient))
-    case ^OGSSession:
-        ogs_session_destroy(controller.client.(^OGSSession))
-    }
+    // switch c in controller.client {
+    // case ^gtp.GTPClient:
+    //     gtp.client_delete(controller.client.(^gtp.GTPClient))
+    // case ^OGSSession:
+    //     ogs_session_destroy(controller.client.(^OGSSession))
+    // }
 
     free(controller)
 }
